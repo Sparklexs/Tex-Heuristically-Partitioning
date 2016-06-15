@@ -110,12 +110,21 @@ The immediate effect is that reduced space occupancy allows more data to be stor
 %In its most basic and popular form, an inverted index is a collection of sorted sequences of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}.
 %Growing size of data and stringent query processing efficiency requirement have appealed a large amount of research, with the aim to compress the space occupancy of the index and speed up the query processing.
 
-The inverted index can be seen as a collection of posting lists where each list $I_t$ is mapped to one term \textit{t} of a vocabulary.
+The inverted index can be seen as a collection of posting lists where each list $I_t$ is mapped to one term \textit{t} of vocabulary.
 Inside $I_t$ are postings containing information about the occurrences of \textit{t} in one particular document \textit{d}, typically the \textit{docid}, the \textit{frequency}, and possibly the \textit{position} and other information.
 These postings are always ordered by docid or frequency to fit different IR tasks\cite{navarro2010dual}.
-To facilitate both compression and query processing, each list is treated as separate data stream and components inside are stored in a non-interleaved way. 
+To facilitate both compression and query processing, each list is treated as separate data stream and components inside are stored in a non-interleaved way\cite{anh2010index}. 
 
-The compression techniques can be roughly divided into two categories,namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}\cite{catena2014inverted,silvestri2010vsencoding}. The integer-oriented encoders assign an unique codeword to each integer of the posting list and are hard to decode because of plenty of bitwise operations. Recent work makes progress by optimizing byte/word-aligned encoders using SIMD instructions\cite{stepanov2011simd,trotman2014compression}. The list-oriented encoders are designed to exploit the cluster of neighboring integers and are much faster to decode, however, inferior in compression ratio.
+Many techniques for inverted index compression have been studied over years, see \cite{catena2014inverted,trotman2014compression} for more details.
+Among these techniques, splitting posting list into blocks has been demonstrate to be an efficient way and widely adopted by many encoders.
+For that by keeping blocks separately accessible we can expect faster decoding speed and hierarchical structure.
+In addition, variable-sized blocks can utilize the clustering property of list to beat the entropy\cite{silvestri2010vsencoding,moffat2000binary}.
+However, finding optimal partitions using variable-sized blocks can be very time consuming and the decoding procedure is delayed by additional cache miss.
+
+%The compression techniques can be roughly divided into two categories,namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}\cite{catena2014inverted,silvestri2010vsencoding}.
+%The integer-oriented encoders assign an unique codeword to each integer of the posting list and are hard to decode because of plenty of bitwise operations.
+%Recent work makes progress by optimizing byte/word-aligned encoders using SIMD instructions\cite{stepanov2011simd,trotman2014compression}.
+%The list-oriented encoders are designed to exploit the cluster of neighboring integers and are much faster to decode, however, inferior in compression ratio.
 
 While state-of-the-art techniques do obtain excellent space-time trade-offs, compression time is always neglected as one evaluating criterion. This can be attributed to the fact that index is always preprocessed offline before deployment, and once being taken into effect, update can be committed in an asynchronous and parallel manner. However, timely update for unexpected queries is becoming more and more stringent in search engine, traditional methods do not fit this scenario any more. Until recently researchers begin to use breakthroughs in compact data structure to bear on problems of optimizing inverted index\cite{navarro2010dual,ottaviano2014partitioned,petri2014score}.
 
