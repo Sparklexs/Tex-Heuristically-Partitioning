@@ -96,6 +96,7 @@ Experimental results on TREC GOV2 document collection show that our method makes
 
 
 \section{Introduction}
+
 %Due to its simplicity and flexibility, inverted index gains a large amount of popularity among modern IR systems, especially in large scale search engines, inverted index is now adopted as the core component to fast respond to enormous queries. In its most basic and popular form, an inverted index is a collection of sorted lists of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}. Growing size of collection and high query efficiency requirement have appealed a large amount of research to compress the space occupancy of the index and speed up the query processing.
 The performance of Information Retrieval systems rely largely on the data structure they adopt.
 A well-designed data structure can juggle the mission of effectively storing related information and efficiently answering different kinds of queries.
@@ -103,8 +104,6 @@ Due to its simplicity and flexibility, inverted index gains more popularity than
 However, as the rapid growth of the web, inverted index is facing an formidable performance challenge by billions of increasing documents and highly-concurrent queries.
 Index compression is an important technique to mitigate such problem for it can yield a twofold advantage.
 The immediate effect is that reduced space occupancy allows more data to be stored in limited store unit, more importantly, compression makes it possible to build in-memory index thus reducing the time of data transfer from slow memories\cite{manning2008introduction,zobel2006inverted}.
-
-%the obvious reduction in space occupancy allows more data to be stuffed within a single store unit. On the other hand, by fitting more data into faster memory levels, compression reduces the size of data to be transferred from the slower levels. This is a classic example of trading CPU cycles for decreased I/O latency and bandwidth. For example, given the amount of computing power on a modern multi-core CPUs, transferring a compressed payload from the disk and decompress its content into memory is still far cheaper than just transferring the uncompressed data. Not only data transfers from disk to memory benefit from compression, also data transfers from memory to CPU is also positively affected by compression as it is shown by IBM Memory Expansion Technology [1]. This is a very well know fact also in IR where many scientific results show hot to exploit this trade-off [19, 18, 20, 13].
 
 %inverted index is now adopted as their core component to maintain billions of documents and respond to enormous queries.
 %In its most basic and popular form, an inverted index is a collection of sorted sequences of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}.
@@ -116,7 +115,7 @@ These postings are always ordered by docid or frequency to fit different IR task
 To facilitate both compression and query processing, each list is treated as separate data stream and components inside are stored in a non-interleaved way\cite{anh2010index}. 
 
 Many techniques for inverted index compression have been studied over years, see \cite{catena2014inverted,trotman2014compression} for more details.
-Among these techniques, splitting posting list into blocks has been demonstrate to be an efficient way and widely adopted by many encoders.
+Among these techniques, splitting posting list into \textit{blocks} (or \textit{chunks}) has been demonstrate to be an efficient way and widely adopted by many encoders.
 For that by keeping blocks separately accessible we can expect faster decoding speed and hierarchical structure.
 In addition, variable-sized blocks can utilize the clustering property of list to beat the entropy\cite{silvestri2010vsencoding,moffat2000binary}.
 However, finding optimal partitions using variable-sized blocks can be very time consuming and the decoding procedure is delayed by additional cache miss.
@@ -144,23 +143,41 @@ We demonstrate that the block size follows the same regularity with its space oc
 {\color{red}{say something about the collection, gov2 and common crawl.}}
 Last we perform an experiment that shows compression time is significantly reduced against the original work while its space occupancy and decompression time maintains comparable to the original one.
 
-%Compressing the index has long been a key issue for researchers to ensure both the time- and space-efficiency of inverted index, various encoders with different properties have been put up to settle this problem, and they can be roughly divided into two classes, namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}. The integer-oriented encoders assign an unique codeword to each integer of the input sequence, then the compression procedure turns into a mapping or substitution from the integer space to code space. As they compress integers without considering their neighborings, the integer-oriented encoders are also called oblivious encoders\cite{catena2014inverted}, such as \textit{unary code, Elias Gamma/Delta codes \emph{and} Golomb/Rice codes}. Most integer-oriented encoders are hard to decode since they need bitwise operations to cross computer word boundaries, so byte/word-aligned encoders, are proposed to solve this problem, like \textit{Variable Byte} and \textit{Group Varint}, more importantly, they can be further improved by SIMD instructions of modern CPUs\cite{stepanov2011simd,trotman2014compression}.
-%
-%List-oriented encoders are designed to exploit the cluster of neighboring integers, each time a fixed-sized or variable-sized group of integers is binary packed with an uniform bit width, providing equivalent compression ratio and faster decoding speed, the technique used by these encoders is called \textit{frame-of-reference}(FOR), or \textit{binary packing}\cite{goldstein1998compressing}. Basically, their compression ratios are inferior to these of the first category as a batch of integers are encoded indiscriminately, and useless zeros are filled in the codeword to keep word-aligned, however, when decoded, list-oriented encoders can obtain an entire block while the formers just decode one integer at a time. More importantly, with the help of \textit{skip pointers} or \textit{skip list}, it is possible to step along the codewords compressed by list-oriented encoders and stop when the required number of blocks has been bypassed. Some of these encoders are \textit{Simple Family}, AFOR and \textit{Patched} FOR (PFOR, OptPFOR and FastPFOR).
+\section{Index Compression and Partitioning Strategies}
 
-%\section{Partitioning Strategies and Compression Criteria}
-\section{Partitioning Strategies}
-One thing to be noted is that list-oriented encoders may cost equivalent time to compress the posting list as the integer-oriented encoders even they are designed to compress a list of integers at the same time. Before compressing, a partitioning strategy needs to traverse the whole posting list to decide an optimal partition for compression ratio and decompression time, even after that, an uniform bit width is also needed to encode every element inside each block. Compression techniques like the Simple Family\cite{anh2005inverted,anh2010index}, enumerates all the possible partitioning cases to choose the suitable decision; OptPFOR\cite{yan2009inverted} needs an additional computation to choose the optimal proportion of exceptions in each block in order to achieve a better space efficiency. In the last few years there is a surge of partitioning schemes to accelerate the compression procedure\cite{lemire2015decoding,ottaviano2014partitioned}.
+Compressing the index has long been a key issue for researchers to ensure both the time- and space-efficiency of inverted index, various encoders with different properties have been put up to settle this problem, and they can be roughly divided into two classes, namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}.
+
+The integer-oriented encoders assign an unique codeword to each integer of the input list, then the compression procedure turns into a mapping or substitution from the integer space to code space.
+As they compress integers without considering their neighborings, the integer-oriented encoders are also called oblivious encoders\cite{catena2014inverted}, such as \textit{unary code, Elias Gamma/Delta codes \emph{and} Golomb/Rice codes}.
+Most integer-oriented encoders are hard to decode since they need bitwise operations to cross computer word boundaries, so byte/word-aligned encoders, are proposed to solve this problem, like \textit{Variable Byte} and \textit{Group Varint}, more importantly, they can be further improved by SIMD instructions of modern CPUs\cite{stepanov2011simd,trotman2014compression}.
+
+List-oriented encoders are designed to exploit the cluster of neighboring integers, each time a fixed-sized or variable-sized group of integers is binary packed with an uniform bit width, providing equivalent compression ratio and faster decoding speed, the technique used by these encoders is called \textit{frame-of-reference}(FOR), or \textit{binary packing}\cite{goldstein1998compressing}.
+Basically, their compression ratios are inferior to these of the first category as a batch of integers are encoded indiscriminately, and useless zeros are filled in the codeword to keep word-aligned.
+However, when decoded, list-oriented encoders can obtain an entire block while the formers just decode one integer at a time.
+More importantly, with the help of \textit{skip pointers} or \textit{skip list}, it is possible to step along the codewords compressed by list-oriented encoders and stop when the required number of blocks has been bypassed.
+Some of these encoders are \textit{Simple Family}, AFOR and \textit{Patched} FOR (PFOR, OptPFOR and FastPFOR).
 
 \textit{Directed Acyclic Graph.}
-Blocks with fixed length are likely to be suboptimal as integers in posting list will not be evenly distributed.Works from literature\cite{anh2004index,delbru2012searching,silvestri2010vsencoding}give another perspective on partitioning. The posting list $\mathcal{S}[0,n-1]$ is considered a particular directed acyclic graph $\mathcal{G}$, each integer is represented by a vertex $v$, edge denoted as $\left( v_{i}, v_{j} \right)$ is an exact correspondence of a partition in the posting list $\mathcal{S}\left[i,j \right]$, edge has also associated its cost $c(v_{i},v_{j})=\left| \mathcal{E}\left(\mathcal{S}\left[i,j-1 \right] \right) \right| $ that corresponds to the size in bits of the partition compressed by encoder $\mathcal{E}$. Thus, the problem of optimally partitioning a list is reduced to the problem of Single-Source Shortest Path(SSSP) Problem.
+One thing to be noted is that list-oriented encoders may cost equivalent time to compress the posting list as the integer-oriented encoders even they are designed to compress a list of integers at the same time.
+Before compressing, a partitioning strategy is needed to traverse the whole input list to search for an optimal partition, in consideration of compression ratio and decoding speed.
+Even after that, an uniform bit width has to be chosen to fit every element in for each block.
+Compression techniques like the Simple Family\cite{anh2005inverted,anh2010index}, enumerates all the possible partitioning cases to choose the suitable decision; OptPFOR\cite{yan2009inverted} needs an additional computation to choose the optimal proportion of exceptions in each block in order to achieve a better space efficiency.
+In the last few years there is a surge of partitioning schemes to accelerate the compression procedure\cite{lemire2015decoding,ottaviano2014partitioned}.
 
-However, a trivial traversal may not suffice to obtain an efficient solution for this problem, as the graph $\mathcal{G}$ is complete with $\Theta\left( n^{2}\right)$ edges, even partitioning posting lists with thousands of integers wi`ll be intolerable. Anh et al.\cite{anh2004index} and Delbru et al.\cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine. Fabrizio\cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
+Blocks with fixed length are likely to be suboptimal as integers in posting list will not be evenly distributed.
+Works from literature \cite{anh2004index,delbru2012searching,silvestri2010vsencoding} give another perspective on partitioning.
+The posting list $\mathcal{S}[0,n-1]$ is considered a particular directed acyclic graph $\mathcal{G}$, each integer is represented by a vertex $v$, edge denoted as $\left( v_{i}, v_{j} \right)$ is an exact correspondence of a partition in the posting list $\mathcal{S}\left[i,j \right]$, edge has also associated its cost $c(v_{i},v_{j})=\left| \mathcal{E}\left(\mathcal{S}\left[i,j-1 \right] \right) \right| $ that corresponds to the size in bits of the partition compressed by encoder $\mathcal{E}$.
+Thus, the problem of optimally partitioning a list is reduced to the problem of Single-Source Shortest Path(SSSP) Problem.
+
+However, a trivial traversal may not suffice to obtain an efficient solution for this problem, as the graph $\mathcal{G}$ is complete with $\Theta\left( n^{2}\right)$ edges, even partitioning posting lists with thousands of integers will be intolerable.
+Anh et al.\cite{anh2004index} and Delbru et al.\cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine.
+Fabrizio\cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
 
 Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 %an elaborate approximation algorithm will be feasible, which reduces the time and space complexities to linear, at the cost of finding slightly suboptimal solutions.
 
 \section{Method Evaluation Criteria}
+
 Compression techniques are optimized under two criteria, namely \textit{decompression time} and \textit{space occupancy}, different encoders yield different space-time trade-offs, generally, integer-oriented encoders tend to be more space-efficient while list-oriented encoders focus on time efficiency. \textit{Compression time} stays a low profile in the literature, as it does not make a difference for practical use, many encoders pursue a better performance at the expense of prolonging compression time, recently it begins to gain attention as one criterion to evaluate a compression technique\cite{lemire2015decoding,ottaviano2015optimal}.
 
 \textit{Pareto-Optimal Compression.}
@@ -183,6 +200,7 @@ PEF describes a suboptimal partitioning strategy which finds the solution by gen
 \section{Linear Partitioning Strategy}
 % 这个地方复述的有点多，需要精简突出自己的method
 \subsection{Partitioned Elias-Fano Index}
+
 Given a monotonically increasing sequence $ \mathcal{S}[0,n-1] $ of $ n $ integers drawn from the range $ [0,u] $, and $ u $ is called an \textit{universe} of $ \mathcal{S} $. The Elias-Fano representation is a efficient quasi-succinct representation for monotone sequences used in \cite{elias1974efficient,vigna2013quasi}.
 $ \mathcal{S} $ is represented using two bit arrays, namely \textit{the higher bits} and \textit{the lower bits}.
 For a given integer $ \ell $, each element of $ \mathcal{S} $ is split into the lower $ \ell $ bits and the higher $ \lceil \log u \rceil - \ell$ bits.
@@ -201,6 +219,7 @@ Recall the approximation algorithm adopted in PEF, whose core idea is to generat
 By setting an upper bound $U$ (say, $U=\frac{F}{\varepsilon_{1}}$ by a predefined $\varepsilon_{1}\in\left(0,1\right)$), the total edges, addressed as $\varepsilon-maximal$ edges, in $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$ are $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$. 
 
 \subsection{Heuristically Finding Optimal Partition}
+
 These $\varepsilon-maximal$ edges can be found by keeping $k = O\left(\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ sliding windows over $\mathcal{S}$.
 During the algorithm visits posting list, the sliding windows are actually potential partitions, which start at the same position $ v_{i} $ but have different lengths.
 At first, all these windows are docked at vertex 0 with 0 length.
@@ -317,6 +336,7 @@ Pseudo code of the above space-efficient procedure can be found in Algorithm~\re
 \end{algorithm}
 
 \section{Experiments}
+
 We use the posting lists extracted from the TREC GOV2 collection, which consists of 25.2 million documents and 32.8 million terms. All the terms have the Porter stemmer applied, stopwords are removed, and docids are reordered by the lexicographic order of URLs. All the implementations are carried out on an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz with 128GB of RAM and 12,288KB of cache. Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations. In all our runs, the whole inverted index is completely loaded into main memory, executions are reported as the mean of 4 consecutive replications.
 
 We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (uniform) and $\varepsilon$-partitioned PEF (optimal).
@@ -396,6 +416,7 @@ Future work will focus on formulating the notion of Pareto-Optimal Compression a
 \bibliography{reference}
 
 \section*{Appendix: Deduction of reasonable partition length ratios}\label{apd}
+
 %\appendix[Deduction of reasonable partition length ratios] 
 Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $. Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
 For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0,1,2) $, showing that they asymptotically reaches the same upper bound as their partition cost. Shown as the following equation:
