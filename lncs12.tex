@@ -164,17 +164,56 @@ Even after that, an uniform bit width has to be chosen to fit every element in f
 Compression techniques like the Simple Family\cite{anh2005inverted,anh2010index}, enumerates all the possible partitioning cases to choose the suitable decision; OptPFOR\cite{yan2009inverted} needs an additional computation to choose the optimal proportion of exceptions in each block in order to achieve a better space efficiency.
 In the last few years there is a surge of partitioning schemes to accelerate the compression procedure\cite{lemire2015decoding,ottaviano2014partitioned}.
 
-Blocks with fixed length are likely to be suboptimal as integers in posting list will not be evenly distributed.
-Works from literature \cite{anh2004index,delbru2012searching,silvestri2010vsencoding} give another perspective on partitioning.
-The posting list $\mathcal{S}[0,n-1]$ is considered a particular directed acyclic graph $\mathcal{G}$, each integer is represented by a vertex $v$, edge denoted as $\left( v_{i}, v_{j} \right)$ is an exact correspondence of a partition in the posting list $\mathcal{S}\left[i,j \right]$, edge has also associated its cost $c(v_{i},v_{j})=\left| \mathcal{E}\left(\mathcal{S}\left[i,j-1 \right] \right) \right| $ that corresponds to the size in bits of the partition compressed by encoder $\mathcal{E}$.
-Thus, the problem of optimally partitioning a list is reduced to the problem of Single-Source Shortest Path(SSSP) Problem.
+There is a common view that traditional methods which use a fixed-sized block to uniformly partition a sequence fail to exploit the nature of the underlying sequence, that the list is formed by clusters of consecutive integers.
+Indeed, the sequence contains postings of documents crawled from different domains, when the docids reordered by their URLs, more and larger clusters of integers which are very close to each other will show up.
+We cannot expect uniform partitioning to be optimal since clusters are not likely to be aligned with each fixed-sized block.
+A more practical way to enhance compression efficiency is to use blocks with variable size to adapt the encoding to the value distribution.
 
-However, a trivial traversal may not suffice to obtain an efficient solution for this problem, as the graph $\mathcal{G}$ is complete with $\Theta\left( n^{2}\right)$ edges, even partitioning posting lists with thousands of integers will be intolerable.
-Anh et al.\cite{anh2004index} and Delbru et al.\cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine.
-Fabrizio\cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
+%Here we do not take PFOR into account even though it reaches a good compression performance and fast decoding speed, yet it adopts an uniform partitioning scheme and its compression phase cannot be efficiently implemented, for that PFOR requires a complex heuristic that require multiple passes over the values of a block in order to find the bit width and the set of exceptions providing the highest compression\cite{delbru2010adaptive}. The basic form of FOR will provide a better tolerance against exceptions with variable block size and faster encoding speed without extra operations to separately store these exceptions.
 
+AFOR and method proposed by \cite{anh2004index} give an initiative trial on optimal partitioning scheme.
+AFOR breaks a fixed-sized block into multiple frames of variable length, and arrange different combinations to achieve better compression.
+It does get an impressive compression speed in our experiment, however, its partitioning scheme is quite rough as few options for frame length provide a limited performance.
+% and finds a reasonable trade-off by defining the block size to 32 with three frame lengths, 32, 16 and 8, each time a block is fetched and combinations of the three frames are evaluated to encode this block.
+\cite{anh2004index} uses a similar technique as AFOR, but encodes the sequence under static table driven approaches, namely deciding the optimal partition by looking up a predefined table and comparing different options.
+The option chosen for the current partition is always adjacent to the last-used one in the table, thus minimizing the space occupied by descriptor.
+However, this encoder outputs bit-aligned codes which are inefficient to write and read.
+VSEncoding further extends AFOR with more flexibility to partition a sequence via bottom-up dynamic programming approach, which also brings a side effect that the time and space complexity turns into polynomial, making this solution prohibitive.
+% (do not ever metion its compreesion performance) VSEncoding has tightened both ranges for block size and bit width to mitigate this problem, nonetheless, its compression performance is still terrible.
+Several variant implementations are provided on its website\footnote{\url{http://integerencoding.isti.cnr.it/}}, for example, VSE-R achieves the best compression ratio and VSE-Simple achieves the best decoding speed.
+Even compared with SIMD-accelerated encoders, VSEncoding still shows some unique advantages.
+Needless to say, it holds a lot of potential but needs elaborate optimization. The recently proposed PEF sheds light upon how to accelerate the compression performance of VSEncoding with approximation algorithms, PEF identifies the minimum-space partition by omitting inefficient schemes, thus time complexity is greatly reduced.
+%index built using PEF is a two-level data structure which supports fast queries on the original sequence, PEF first partitions the sequence into contiguous \textit{chunks} so that each chunk can better adapt to local statistics, the upper level stores lists of chunk endpoints and boundary elements and the lower level stores elements within each chunk, both of which are compressed using Elias-Fano code\cite{vigna2013quasi}. PEF designs a linear time optimization algorithm which identifies the minimum-space partition up to an arbitrarily small approximation factor and its core idea has been mentioned in Section~\ref{sec:introduction}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\linewidth]{sssp}
+	\caption[sssp]{Here is a DAG for sequence with 6 integers represented using gap(differences between them). Optional bit widths range from 3 to 5, each gap is fitted in the tuple (\textit{position, available-bit-width}), if the available-bit-widths are more than one, they are placed in different rows, the number in the edge denotes the cost for this path, the fixed cost is set to 4.}
+	\label{fig:sssp}
+\end{figure}
+
+The common foundation for the abovementioned methods is to recast the integer sequence $\mathcal{S} \left[ 0,n \right]$ to a particular DAG $\mathcal{G}$, each integer is represented by a vertex, plus a dummy vertex marking the end of the sequence.
+The graph $\mathcal{G}$ is complete, which means that for any $i$ and $j$ with $i < j \leqslant n$, there exists an edge connecting $v_{i}$ and $v_{j}$, denoted as $\left( v_{i}, v_{j} \right)$.
+In fact, the edge is an exact correspondence of a partition in the sequence $\mathcal{S}\left[i,j \right] $, the problem of fully partitioning $\mathcal{S}$ is converted to finding a path $\pi$ in $\mathcal{G}$, for instance, $\pi=\left( v_{0}, v_{i_{1}} \right) \left( v_{i_{1}}, v_{i_{2}} \right)\ldots\left( v_{i_{k-1}}, v_{n} \right)$ with $k$ edges corresponds to the partition $\mathcal{S}\left[0,i_{1}-1 \right]\mathcal{S}\left[i_{1},i_{2}-1 \right] \ldots\mathcal{S}\left[i_{k-1},n-1\right] $ of $k$ blocks.
+The weight of an edge in the graph is equal to the cost in bits consumed by the partition. Thus, the problem of optimally partitioning a sequence is reduced to the problem of Single-Source Shortest Path(SSSP) Labeling, as shown in Fig.~\ref{fig:sssp}.
+An intuitive way to solve this is to firstly set the cost of each vertex in $\mathcal{G}$ to $+\infty$, then an iteration starts from the left vertex to the rightmost, when it comes to a vertex $v_{j}$ with $0\leqslant j < n$, a subproblem of find the optimal path from $v_{j}$ to $v_{n}$ shows up, assuming the optimal path from $v_{0}$ to $v_{j}$ has been correctly computed.
+Each edge $\left( v_{j},v'\right)$ outgoing from $v_{j}$ will be assessed and cost of vertex $v'$ is updated if it becomes smaller. As can be seen, the time complexity of this algorithm is proportional to the number of edges in $\mathcal{G}$.
+
+However, the $\mathcal{G}$ transformed from integer sequence $\mathcal{S}$ is complete with $\Theta\left( n^{2}\right)$ edges, especially some posting lists for popular terms will be quite large, finding their optimal partitions will be intolerable.
 Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 %an elaborate approximation algorithm will be feasible, which reduces the time and space complexities to linear, at the cost of finding slightly suboptimal solutions.
+
+% XXX: Reduced Version of the Above paragraphs
+%Blocks with fixed length are likely to be suboptimal as integers in posting list will not be evenly distributed.
+%Works from literature \cite{anh2004index,delbru2012searching,silvestri2010vsencoding} give another perspective on partitioning.
+%The posting list $\mathcal{S}[0,n-1]$ is considered a particular directed acyclic graph $\mathcal{G}$, each integer is represented by a vertex $v$, edge denoted as $\left( v_{i}, v_{j} \right)$ is an exact correspondence of a partition in the posting list $\mathcal{S}\left[i,j \right]$, edge has also associated its cost $c(v_{i},v_{j})=\left| \mathcal{E}\left(\mathcal{S}\left[i,j-1 \right] \right) \right| $ that corresponds to the size in bits of the partition compressed by encoder $\mathcal{E}$.
+%Thus, the problem of optimally partitioning a list is reduced to the problem of Single-Source Shortest Path(SSSP) Problem.
+%		
+%However, a trivial traversal may not suffice to obtain an efficient solution for this problem, as the graph $\mathcal{G}$ is complete with $\Theta\left( n^{2}\right)$ edges, even partitioning posting lists with thousands of integers will be intolerable.
+%Anh et al.\cite{anh2004index} and Delbru et al.\cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine.
+%Fabrizio\cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
+%		
+%Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 
 \section{Method Evaluation Criteria}
 
