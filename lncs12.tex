@@ -95,7 +95,7 @@ Experimental results on TREC GOV2 document collection show that our method makes
 \end{abstract}
 
 
-\section{Introduction}
+\section{Introduction}\label{sec:intro}
 
 %Due to its simplicity and flexibility, inverted index gains a large amount of popularity among modern IR systems, especially in large scale search engines, inverted index is now adopted as the core component to fast respond to enormous queries. In its most basic and popular form, an inverted index is a collection of sorted lists of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}. Growing size of collection and high query efficiency requirement have appealed a large amount of research to compress the space occupancy of the index and speed up the query processing.
 The performance of Information Retrieval systems rely largely on the data structure they adopt.
@@ -140,10 +140,11 @@ There is still much potential for the compression speed of PEF to be improved.
 We provide a heuristic partitioning strategy on PEF which computes partitions in a single pass with only one sliding window.
 More precisely, we compare the sizes of a series of adjacent blocks, once an unusually small block is detected, an endpoint can be assigned inside it.
 We demonstrate that the block size follows the same regularity with its space occupancy when expanding the sliding window along posting list, then a block can be built using few calculations.
+% XXX: say something about the collection, gov2 and common crawl. Also, size and decoding performance of PEF heavily depends on the carefully tune parameters, making it more time intensive.
 {\color{red}{say something about the collection, gov2 and common crawl.}}
 Last we perform an experiment that shows compression time is significantly reduced against the original work while its space occupancy and decompression time maintains comparable to the original one.
 
-\section{Index Compression and Partitioning Strategies}
+\section{Index Compression and Partitioning Strategies}\label{sec:II}
 
 Compressing the index has long been a key issue for researchers to ensure both the time- and space-efficiency of inverted index, various encoders with different properties have been put up to settle this problem, and they can be roughly divided into two classes, namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}.
 
@@ -203,7 +204,7 @@ However, the $\mathcal{G}$ transformed from integer sequence $\mathcal{S}$ is co
 Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 %an elaborate approximation algorithm will be feasible, which reduces the time and space complexities to linear, at the cost of finding slightly suboptimal solutions.
 
-% XXX: Reduced Version of the Above paragraphs
+% sxs: Reduced Version of the Above paragraphs
 %Blocks with fixed length are likely to be suboptimal as integers in posting list will not be evenly distributed.
 %Works from literature \cite{anh2004index,delbru2012searching,silvestri2010vsencoding} give another perspective on partitioning.
 %The posting list $\mathcal{S}[0,n-1]$ is considered a particular directed acyclic graph $\mathcal{G}$, each integer is represented by a vertex $v$, edge denoted as $\left( v_{i}, v_{j} \right)$ is an exact correspondence of a partition in the posting list $\mathcal{S}\left[i,j \right]$, edge has also associated its cost $c(v_{i},v_{j})=\left| \mathcal{E}\left(\mathcal{S}\left[i,j-1 \right] \right) \right| $ that corresponds to the size in bits of the partition compressed by encoder $\mathcal{E}$.
@@ -215,12 +216,19 @@ Since dynamic programming is inefficient and greedy mechanism is too coarse, a m
 %		
 %Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 
-\section{Method Evaluation Criteria}
+\section{Method Evaluation Criteria}\label{sec:III}
 
-Compression techniques are optimized under two criteria, namely \textit{decompression time} and \textit{space occupancy}, different encoders yield different space-time trade-offs, generally, integer-oriented encoders tend to be more space-efficient while list-oriented encoders focus on time efficiency. \textit{Compression time} stays a low profile in the literature, as it does not make a difference for practical use, many encoders pursue a better performance at the expense of prolonging compression time, recently it begins to gain attention as one criterion to evaluate a compression technique\cite{lemire2015decoding,ottaviano2015optimal}.
+Compression techniques are optimized under two criteria, namely \textit{decompression time} and \textit{space occupancy}.
+Different encoders yield different space-time trade-offs, generally, integer-oriented encoders tend to be more space-efficient while list-oriented encoders focus on time efficiency.
+\textit{Compression time} stays a low profile in the literature, as it does not make a difference for practical use, many encoders pursue a better performance at the expense of prolonging compression time.
+Recently it begins to gain attention as one criterion to evaluate a compression technique\cite{lemire2015decoding,ottaviano2015optimal}.
 
 \textit{Pareto-Optimal Compression.}
-Taking the compression time into account, we get an extended tri-criteria to evaluate the performance of compression techniques. In this respect, we recall the concept of \textit{Pareto-optimal} compression to define the notion of ``best" compression in a principled way, i.e., encoders achieve different points in the space-time trade-off curve, optimal ones are those extreme points where performances are not worse than others in one dimension, and if to be optimized in any dimension, performances in the other two will get impaired accordingly. Absolutely there exists a set of Pareto-Optimal Compressions with different considerations. Figure~\ref{fig:performance} shows performances of different encoders\footnote{The installation of these implementations is same with the Experiments Section, even quite different from results in other work, but they are directly comparable with each other.}.
+Taking the compression time into account, we get an extended tri-criteria to evaluate the performance of compression techniques.
+In this respect, we recall the concept of \textit{Pareto-optimal} compression to define the notion of ``best" compression in a principled way, i.e., encoders achieve different points in the space-time trade-off curve.
+Optimal ones are those extreme points whose performances are not worse than others in one dimension, and if to be optimized in any dimension, performances in the other two will get impaired accordingly.
+Absolutely there exists a set of Pareto-Optimal Compressions with different considerations.
+Figure~\ref{fig:performance} shows performances of different compression techniques\footnote{The installation of these implementations is same with the Experiments Section, even quite different from results in other work, but they are directly comparable with each other.}.
 
 \begin{figure}
 	\centering
@@ -229,18 +237,34 @@ Taking the compression time into account, we get an extended tri-criteria to eva
 	\label{fig:performance}
 \end{figure}
 
-From the fitting curve and the marginal rugs, we can observe that points, which approach to limit of one dimension, begins to cluster and performances of the other two dimension drops intensely. Points beyond the curve are either superior or inferior to the average (i.e., VB and AFOR).
+% say something about the three generations of encoders, refering to paper "compression, simd and posting list"
+From the fitting curve and the marginal rugs, we can observe that points, which approach to limit of one dimension, begins to cluster and performances of the other two dimension drops intensely.
+Points beyond the curve are either superior or inferior to the average (i.e., VB and AFOR).
+Generally, these points cluster into three slots according to their decoding speed, broadly consistent with three stages in the evolution of index compression technologies.
+The first stage is integer-oriented encoders proposed in early years, whose purpose is to create the smallest index, regardless of the decoding speed.
+Points represent these encoders can be found at the bottom right conner.
+Note there is one exception that IPC is a list-oriented encoder proposed by Moffat \& Stuiver\cite{moffat2000binary}, however, it reaches the best compression at the cost of worst decoding speed.
+The second stage falls into the slot above the first one, encoders begin to pursue faster decoding speed with slightly worse compression ratio.
+We can observe that these encoders even get slower compression speed than those of the first stage.
+The classical Variable Byte and AFOR both get favorable encoding and decoding speed, however, with larger space occupancy, especially the latter one.
+The third stage are encoders reinforced by SIMD instructions, obtaining faster speed in encoding and decoding, but further more space.
+This kind of encoders tend occupy more spaces because it is designed to process data in bulk, namely fitting more integers into one block.
+Using SIMD is superior in encoding/decoding as a whole, however, when accessing a specified position or element, more data have to be decoded.
 
 \textit{Partitioned Elias-Fano Index.}
 We also emphasize PEF by two straight lines in Figure~\ref{fig:performance}, as it reaches a space occupancy competitive with integer-oriented encoders while keeping a reasonable decoding speed. It is a two-level data structure which partitions the posting list into Elias-Fano (EF) represented \textit{chunks} to adapt to its local statistics and stores pointers to these chunks in the upper EF sequence. Study shows that it is efficient in random access and search operations but slow in sequential decoding\cite{ottaviano2015optimal,vigna2013quasi}.
 
-PEF describes a suboptimal partitioning strategy which finds the solution by generating a pruned DAG on the posting list in $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time and $O\left(\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ space, and it is an $\left(1+\varepsilon\right)$-approximation algorithm to the optimal one, for any given $\varepsilon\in\left(0,1\right)$. However, it is still prohibitive in compression time, next section we describe a faster algorithm preserving the same approximation guarantee.
+PEF describes a suboptimal partitioning strategy which finds the solution in linear time by generating a pruned DAG on the posting list.
+%$O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time and $O\left(\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ space, and it is an $\left(1+\varepsilon\right)$-approximation algorithm to the optimal one, for any given $\varepsilon\in\left(0,1\right)$.
+However, it is still prohibitive in compression time, because the compressed size and decoding performance of the index rely heavily on the approximation factors, to obtain the best solution these factors need to be carefully engineered for different collection.
+Next section we describe a faster algorithm preserving the same approximation guarantee.
 
-\section{Linear Partitioning Strategy}
-% 这个地方复述的有点多，需要精简突出自己的method
+\section{Linear Partitioning Strategy}\label{sec:IIII}
+% verbose here, emphasize the method
 \subsection{Partitioned Elias-Fano Index}
 
-Given a monotonically increasing sequence $ \mathcal{S}[0,n-1] $ of $ n $ integers drawn from the range $ [0,u] $, and $ u $ is called an \textit{universe} of $ \mathcal{S} $. The Elias-Fano representation is a efficient quasi-succinct representation for monotone sequences used in \cite{elias1974efficient,vigna2013quasi}.
+The Elias-Fano representation is a efficient quasi-succinct representation for monotone sequences used in \cite{elias1974efficient,vigna2013quasi}.
+Given a monotonically increasing sequence $ \mathcal{S}[0,n-1] $ of $ n $ integers drawn from the range $ [0,u] $, and $ u $ is called an \textit{universe} of $ \mathcal{S} $.
 $ \mathcal{S} $ is represented using two bit arrays, namely \textit{the higher bits} and \textit{the lower bits}.
 For a given integer $ \ell $, each element of $ \mathcal{S} $ is split into the lower $ \ell $ bits and the higher $ \lceil \log u \rceil - \ell$ bits.
 The lower bits are stored explicitly and contiguously in the lower bits array \textit{L}, the higher bits are stored in the higher bits array \textit{H} as a sequence of unary-coded gaps (\cite{ottaviano2014partitioned} uses unary-coded buckets instead, but they both reach the same space complexity).
@@ -254,8 +278,12 @@ An optimal partition must satisfy the following two requirements: on one hand, t
 However, traditional dynamic programming methods like \cite{silvestri2010vsencoding} turn out to be very costly when finding the optimal solution.
 A more feasible way is adopting an approximation algorithm to prune the complete graph $ \mathcal{G} $ under some criteria, retaining its shortest path while cutting out edges which are impossible to be space-efficient.
 
-Recall the approximation algorithm adopted in PEF, whose core idea is to generate a pruned subgraph $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$ of the original $\mathcal{G}\left(\mathcal{S}\right)$, the pruning strategy works by sparsifying edges in $\mathcal{G}\left(\mathcal{S}\right)$ into a geometric sequence with common ratio equals $(1+\varepsilon_{2})$, where $ \varepsilon_{2}\in\left(0,1\right) $, that is, for each vertex $v_{i}$ keeping the edge that approximates at the best the value $F\left(1+\varepsilon_{2}\right)^{k}$ from below for each integer $k$ ($F$ is the fixed cost of one partition).
-By setting an upper bound $U$ (say, $U=\frac{F}{\varepsilon_{1}}$ by a predefined $\varepsilon_{1}\in\left(0,1\right)$), the total edges, addressed as $\varepsilon-maximal$ edges, in $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$ are $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$. 
+Recall the approximation algorithm adopted in PEF, whose core idea is to generate a pruned subgraph $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$ of the original $\mathcal{G}\left(\mathcal{S}\right)$.
+To construct $\mathcal{G}_{\varepsilon}$ on the fly, a dynamic data structure is deployed which maintains a set of \textit{sliding windows} over $\mathcal{S}$ denoted by $\omega_{0},\omega_{1},\dots, \omega_{\log_{1+\varepsilon_2}\frac{1}{\varepsilon_1}}$, each of them represents a cost class of $F\left(1+\varepsilon_2\right)^{i}$ for each integer $i$ ($F$ is the fixed cost of one partition and $\varepsilon_{2}\in\left(0,1\right)$).
+By setting an upper bound $U$ (say, $U=\frac{F}{\varepsilon_{1}}$ by a predefined $\varepsilon_{1}\in\left(0,1\right)$), the total number of edges in $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$, addressed as $\varepsilon-maximal$ edges, are $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$.
+%During the algorithm visits posting list, the sliding windows are actually potential partitions over $ \mathcal{S} $, which start at the same position $ v_{i} $ but have different lengths.
+
+%The key to keep algorithm finishing in linear time is that, these windows never contract after expanding. Thus for all the starting vertex we only need to evaluate few vertexes nearby the end of each window, and the only exception is vertex 0, where each sliding window has to evaluate vertexes one by one until the cost upper bound is reached. The whole procedure can be visualized by imagining a set of elastic ribbons with different lengths being stretched along a line. Initially, these ribbons are relaxed with both ends nailed to the starting vertex, then one end is stretched rightwards along the line. When a ribbon is fully stretched, we nail its tail end to the current place and relax it by advance its head end one step towards right, then again stretch its tail end and so on. Given the fact that cost calculation can be done in constant time, it is easy to prove that returning an optimal partition only needs almost $ 2n\log_{1+\varepsilon}\frac{1}{\varepsilon} $ calls to cost calculation, namely in $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time.
 
 \subsection{Heuristically Finding Optimal Partition}
 
@@ -265,11 +293,17 @@ At first, all these windows are docked at vertex 0 with 0 length.
 Each time as the algorithm visits a subsequent vertex, these windows expand their sizes by appending this vertex to the end, once cost of the vertexes within current window, say $ \omega_{i} $, exceeds its threshold $ F \left( 1 + \varepsilon \right) ^{i} $, $ \omega_{i} $ stops expanding its size and we get one $\varepsilon-maximal$ edge of class $ i $.
 Windows $ \omega_{i+1}, \dots, \omega_{k}$ will keep repeating this procedure until all the $\varepsilon-maximal$ edges out going from the starting vertex are figured out.
 Then algorithm repeats the above procedure to find $\varepsilon-maximal$ edges for next vertex until reaches the end.
-Given the fact that cost calculation can be done in constant time, it is easy to prove that returning an optimal partition only needs almost $ 2n\log_{1+\varepsilon}\frac{1}{\varepsilon} $ calls to cost calculation, namely in $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time.
 
-However, it is still inefficient in practice since there can be tens of them, actually we need only one window to accommodate as many as possible integers and stop expanding as soon as an \textit{exception} is encountered.
+The key to keep algorithm finishing in linear time is that, these windows never contract after expanding.
+Thus for all the starting vertex we only need to evaluate few vertexes nearby the end of each window, and the only exception is vertex 0, where each sliding window has to evaluate vertexes one by one until the cost upper bound is reached.
+The whole procedure can be visualized by imagining a set of elastic ribbons with different lengths being stretched along a line.
+Initially, these ribbons are relaxed with both ends nailed to the starting vertex, then one end is stretched rightwards along the line.
+When a ribbon is fully stretched, we nail its tail end to the current place and relax it by advance its head end one step towards right, then again stretch its tail end and so on. Given the fact that cost calculation can be done in constant time, it is easy to prove that returning an optimal partition only needs almost $ 2n\log_{1+\varepsilon}\frac{1}{\varepsilon} $ calls to cost calculation, namely in $O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time.
+
+However, it is still inefficient in practice since there can be tens of sliding windows, and different combinations of parameters $ \varepsilon_1,\varepsilon_2 $ have to be tested before adoption.
+Actually we need only one window to accommodate as many as possible integers and stop expanding as soon as an \textit{exception} is encountered.
+
 The following lemma states a crucial property of the path over $\mathcal{G}\left(\mathcal{S}\right)$ to base our partitioning strategy on:	given any triple of indexes $i$, $j$ and $k$ in $\mathcal{G}$ with $0\leqslant i<j<k\leqslant n$, we have $c(v_{i},v_{j})\leqslant c(v_{i},v_{k})$ and $c(v_{j},v_{k})\leqslant c(v_{i},v_{k})$.
-
 % 一旦发现不成比例的短路径，就证明这段间隔内存在异常值，就可以不再寻找接下来的路径了
 We denote edges that start from $v_{i}$ over $\mathcal{G}_{\varepsilon}\left(\mathcal{S}\right)$ as $(v_{i},v_{j_{0}})$, $(v_{i},v_{j_{1}})$, \ldots, $(v_{i},v_{j_{k}})$, and for any adjacent two edges the ratio between them is $(1+\varepsilon_{2})$.
 We speculate the lengths between them should also follow some regulations, an exception can enlarge the average distance inside an edge in a sudden, to keep its weight proportional to its former one, current edge's incremental length has to be comparatively small.
@@ -314,8 +348,7 @@ Take $ \mathcal{E}[h-1]=1 $ and $ \mathcal{E}[h]=2 $ for example, then
 \noindent
 1+\varepsilon_{2}=\frac{n_{h}\lceil\log \frac{u_{h}}{n_{h}}\rceil+2n_{h}}{u_{h-1}}\geqslant \frac{n_{h}}{n_{h-1}}\cdot \frac{2+\log \frac{u_{h}}{n_{h}}}{4}>\frac{n_{h}}{n_{h-1}}.
 \end{displaymath}
-Others get the same conclusion by deduction
-% (See the whole procedure in APPENDIX)
+Others get the same conclusion by deduction (See the whole procedure in APPENDIX)
 , so we set
 \begin{equation}
 \frac{u_{h}}{n_{h}}=1+\varepsilon_2
@@ -374,9 +407,15 @@ Pseudo code of the above space-efficient procedure can be found in Algorithm~\re
 	return $ P $\;
 \end{algorithm}
 
-\section{Experiments}
+\section{Experiments}\label{sec:experiments}
 
 We use the posting lists extracted from the TREC GOV2 collection, which consists of 25.2 million documents and 32.8 million terms. All the terms have the Porter stemmer applied, stopwords are removed, and docids are reordered by the lexicographic order of URLs. All the implementations are carried out on an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz with 128GB of RAM and 12,288KB of cache. Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations. In all our runs, the whole inverted index is completely loaded into main memory, executions are reported as the mean of 4 consecutive replications.
+
+\begin{itemize}
+	\item \textbf{TREC GOV2}
+	\item \textbf{Common Crawl} Common Crawl is a corpus of web crawl data composed of over 5 billion web pages.
+	This data set is freely available on Amazon S3\footnote{\url{http://commoncrawl.org/}}.
+\end{itemize}
 
 We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (uniform) and $\varepsilon$-partitioned PEF (optimal).
 
@@ -454,7 +493,7 @@ Future work will focus on formulating the notion of Pareto-Optimal Compression a
 \bibliographystyle{splncs03}
 \bibliography{reference}
 
-\section*{Appendix: Deduction of reasonable partition length ratios}\label{apd}
+\section*{Appendix: Deduction of reasonable partition length ratios}\label{sec:appendix}
 
 %\appendix[Deduction of reasonable partition length ratios] 
 Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $. Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
