@@ -409,17 +409,60 @@ Pseudo code of the above space-efficient procedure can be found in Algorithm~\re
 
 \section{Experiments}\label{sec:experiments}
 
-We use the posting lists extracted from the TREC GOV2 collection, which consists of 25.2 million documents and 32.8 million terms. All the terms have the Porter stemmer applied, stopwords are removed, and docids are reordered by the lexicographic order of URLs. All the implementations are carried out on an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz with 128GB of RAM and 12,288KB of cache. Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations. In all our runs, the whole inverted index is completely loaded into main memory, executions are reported as the mean of 4 consecutive replications.
+\subsection{Experimental Setup}
 
+We use the posting lists extracted from the following two collections:
 \begin{itemize}
-	\item \textbf{TREC GOV2}
-	\item \textbf{Common Crawl} Common Crawl is a corpus of web crawl data composed of over 5 billion web pages.
-	This data set is freely available on Amazon S3\footnote{\url{http://commoncrawl.org/}}.
+	\item \textbf{TREC GOV2} is a crawl of the \textbf{.gov} sites used in TREC 2004 Terabyte Track, which consists of 25.2 million documents and 15.3 million terms.
+	\item \textbf{Common Crawl} is a corpus of web crawl data composed of over 5 billion web pages over last 7 years, and it keeps growing until now.
+	The crawl data is stored using WARC 1.0 format with about 541 TB in size.
+	This whole collection is freely available on Amazon S3\footnote{\url{http://commoncrawl.org/}}. 
 \end{itemize}
 
-We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (uniform) and $\varepsilon$-partitioned PEF (optimal).
+Since the Common Crawl corpus is too large to fit in one machine, we only extract a small part of the data crawled in February 2016.
+Documents from these two collections are prepared by applying Porter stemmer after removing stopwords, then the docids are reordered by the lexicographic order of URLs.
+Table~\ref{tab: collection statistics} compares these two collections using some basic statistics.
 
-First of all, We experiment differences caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$. As coarse and discreet partition a posting list in a single pass, relying only on the total length. Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly. Figure~\ref{fig:parameter} shows the influences of them on index size, from which we can gain an insight into these two parameters: $\varepsilon_{2}$ determines the sensitivity to partitions which contains exceptions, and $\varepsilon_{1}$ determines the largest partition length which contains no exceptions, we can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception. $\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions. We set $\varepsilon_{2}=0.9$ and $\varepsilon_{1}=0.03$ in terms of performance.
+\begin{table}
+	\centering
+	\caption{Collection statistics for GOV2 and Common Crawl}
+	\renewcommand{\arraystretch}{1.0}
+	\begin{tabular}{l*{2}{r}}
+		\toprule
+		& \multicolumn{1}{c}{GOV2} & \multicolumn{1}{c}{Common Crawl} \\
+		\midrule
+		Documents & 25,203,921 & 17,157,948 \\
+		Terms  & 15,324,160 & 51,990,893 \\
+		Pointers & 4,655,778,182 & 9,118,361,737 \\
+		Document Length(avg.) & 645.25 & 2151.83 \\
+		Posting List Length(avg.) & 303.82 & 173.38 \\
+		\bottomrule
+		\label{tab: collection statistics}
+	\end{tabular}
+\end{table}
+
+We can find the trend that document length grows with age, making documents involved in more posting lists.
+However, Common Crawl is less organized than GOV2, since the former is collected from the whole web while the latter is limited in \texttt{.gov} domain, then terms in GOV2 are more repetitive and posting list length is larger.
+Next we will reveal how these differences affect performances of index.
+
+All the implementations are carried out on a PC server with an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz, with 128GB of RAM and 12,288KB of cache. Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations. In all our runs, executions are reported as the mean of 4 consecutive replications.
+Before performing queries, the whole inverted index is completely loaded into main memory, in order to avoid the confusion caused by disk I/O.
+Our implementations are available at \url{https://github.com/Sparklexs/partitioned_elias_fano}.
+
+We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (\textit{uniform}) and $\varepsilon$-partitioned PEF (\textit{optimal}).
+
+\subsection{Indexing Performance}
+
+% XXX: only opt needs multi-thread
+First of all, We experiment differences in compression size and time caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$. As \textit{coarse} and \textit{discreet} partition a posting list in a single pass, relying only on the total length. Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly. Figure~\ref{fig:parameter} shows the influences of them on index size for both GOV2 and Common Crawl, from which we can gain an insight into these two parameters: $\varepsilon_{2}$ determines the sensitivity to partitions which contains exceptions, and $\varepsilon_{1}$ determines the largest partition length which contains no exceptions, we can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception. $\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions.
+With respect to performance, we set $ \left( \varepsilon_1,\varepsilon_2 \right) = \left( 0.03,0.9 \right) $ on GOV2, and on Common Crawl we set $ \left( \varepsilon_1,\varepsilon_2 \right) = \left( 0.03,0.9 \right) $.
+
+As mentioned in \cite{ottaviano2014partitioned}, only \textit{optimal} can benefit from parallelization.
+Because finding an optimal partition is computationally intensive and requires much longer time, while the other methods, including \textit{coarse} and \textit{discreet}, are actually I/O-bound.
+For the latter, thread switching might consume extra system resources.
+In our experiment, parallelization prolongs construction times for these I/O-bound methods instead.
+Even \textit{optimal} is accelerated, the procedure of finding the approximation parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ is still a repetitive work, which costs too much time.
+Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
 
 \textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies, adding OptPFOR-compressed index (OptPFOR) as a baseline. It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy. Discreet has obvious superiority compared with coarse, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes. The last column denotes time used for a sequential decompression of the index, discreet and coarse tends to use 10\% longer time to traverse the index than optimal and uniform, delayed by suboptimal partitions. Although all EF-based methods decompress much slower than OptPFOR, their advantages are embodied in random access when applied to query processing.
 
@@ -470,7 +513,8 @@ Table~\ref{tab: chunk size} shows comparisons of average partition lengths for d
 	\end{tabular}
 \end{table}
 
-\textit{Query efficiency.}
+\subsection{Query efficiency}
+
 In order to explore the differences caused by partitioning strategies, the experiment adopts four widely-used methods of ranked query to find the top-20 results, DAAT\_AND, DAAT\_OR, WAND and Maxscore. We randomly select 4000 terms from the lexicon, any of which has a document frequency within the range $(10^{5},10^{6})$, and we regroup them into 1000 queries every 4 terms, avoiding the bias brought by short posting lists while highlighting advantage of random access.
 
 As shown in Figure~\ref{fig:queries}, query time has been enlarged by involvements of multiple long posting lists, outliers can be as large as $10^{5}$ msec, however, most queries can be processed within hundreds of msec. Performances vary a lot among different processing methods,DAAT traverses the index in an exhaustive way, relying only on the throughput of postings. Needless to say, OptPFOR performs the best in DAAT and other indexes rank in accord with average partition lengths, the larger the length, the faster the speed. In detail, DAAT\_AND is the most efficient one as list intersection can cut off large of invalid postings, DAAT\_OR comes at a much higher cost as it cut nothing off, its rank also coincides with decompression speed shown in Table~\ref{tab: size and speed}. When it comes to dynamic pruning, PEF begins to gain an advantage over OptPFOR, also performance gaps among indexes again become unapparent, discreet and coarse even outperform optimal in WAND comparing both outliers and median. In general, results of different indexes do not differ much except those using DAAT\_OR, performances of discreet and coarse rank between optimal and uniform.
