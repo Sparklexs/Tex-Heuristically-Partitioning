@@ -453,20 +453,33 @@ We test performances of two strategies on EF index, \textit{coarse} which finish
 
 \subsection{Indexing Performance}
 
-% XXX: only opt needs multi-thread
-First of all, We experiment differences in compression size and time caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$. As \textit{coarse} and \textit{discreet} partition a posting list in a single pass, relying only on the total length. Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly. Figure~\ref{fig:parameter} shows the influences of them on index size for both GOV2 and Common Crawl, from which we can gain an insight into these two parameters: $\varepsilon_{2}$ determines the sensitivity to partitions which contains exceptions, and $\varepsilon_{1}$ determines the largest partition length which contains no exceptions, we can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception. $\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions.
-With respect to performance, we set $ \left( \varepsilon_1,\varepsilon_2 \right) = \left( 0.03,0.9 \right) $ on GOV2, and on Common Crawl we set $ \left( \varepsilon_1,\varepsilon_2 \right) = \left( 0.03,0.9 \right) $.
+First of all, We experiment differences in compression size and time caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$.
+As \textit{coarse} and \textit{discreet} partition a posting list in a single pass, relying only on the total length.
+Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly.
+Figure~\ref{fig:parameter} shows the influences of them on index size for our proposed methods when compressing both GOV2 and Common Crawl, from which we can gain an insight into these two parameters: $\varepsilon_{2}$ determines the sensitivity to partitions which contains exceptions, and $\varepsilon_{1}$ determines the largest partition length which contains no exceptions.
+We can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception.
+$\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions.
+In order to obtain better performances, $ \left( \varepsilon_1,\varepsilon_2 \right) $ must be adjusted to different collections and compression techniques.
+Details of the configuration can be seen in Table~\ref{tab: parameter}.
 
-As mentioned in \cite{ottaviano2014partitioned}, only \textit{optimal} can benefit from parallelization.
-Because finding an optimal partition is computationally intensive and requires much longer time, while the other methods, including \textit{coarse} and \textit{discreet}, are actually I/O-bound.
-For the latter, thread switching might consume extra system resources.
-In our experiment, parallelization prolongs construction times for these I/O-bound methods instead.
-Even \textit{optimal} is accelerated, the procedure of finding the approximation parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ is still a repetitive work, which costs too much time.
-Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
-
-\textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies, adding OptPFOR-compressed index (OptPFOR) as a baseline. It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy. Discreet has obvious superiority compared with coarse, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes. The last column denotes time used for a sequential decompression of the index, discreet and coarse tends to use 10\% longer time to traverse the index than optimal and uniform, delayed by suboptimal partitions. Although all EF-based methods decompress much slower than OptPFOR, their advantages are embodied in random access when applied to query processing.
-
-Table~\ref{tab: chunk size} shows comparisons of average partition lengths for different indexes, optimal has larger partition lengths but smaller index size than coarse and discreet, proving the fact it can better exploit the local clustering of the posting list. Discreet and coarse do not differ much from each other, as they can only approximately locate an exception and build a chunk in front of it. Next we show these lengths also influence query processing speed.
+\begin{table}
+	\caption{Configuration of parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ for different methods when compressing collections}
+	\begin{center}
+%		\renewcommand{\arraystretch}{1.4}
+		\setlength\tabcolsep{6pt}
+		\begin{tabular}{*{3}c}
+			\toprule
+			& GOV2 & Common Crawl \\
+			\midrule
+			\textit{optimal} & $ \left(0.03,0.3\right) $ & $ \left(0,0.2\right) $\\
+			\midrule
+			\textit{coarse} & \multirow{2}*{$ \left(0.03,0.7\right) $} & \multirow{2}*{$ \left(0.03,0.7\right) $} \\
+			\textit{discreet} & & \\
+			\bottomrule
+			\label{tab: parameter}
+		\end{tabular}
+	\end{center}
+\end{table}
 
 \begin{figure}
 	\centering
@@ -482,23 +495,66 @@ Table~\ref{tab: chunk size} shows comparisons of average partition lengths for d
 	\label{fig:parameter}
 \end{figure}
 
+As mentioned in \cite{ottaviano2014partitioned}, only \textit{optimal} can benefit from parallelization.
+Because finding an optimal partition is computationally intensive and requires much longer time, while the other methods, including \textit{coarse} and \textit{discreet}, are actually I/O-bound.
+For the latter, thread switching might consume extra system resources.
+In our experiment, parallelization prolongs construction times for these I/O-bound methods instead.
+Even \textit{optimal} is accelerated, the procedure of finding the approximation parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ is still a repetitive work, which costs too much time.
+Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
+
+\textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
+It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy.
+\textit{Discreet} has obvious superiority compared with \textit{coarse}, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes.
+The last column denotes time used for a sequential decompression of the index, \textit{discreet} and \textit{coarse} tends to use 10\% longer time to traverse the index than optimal and uniform, delayed by suboptimal partitions.
+Although all EF-based methods decompress much slower than OptPFOR, we will show in the following that their advantages are embodied in random access when applied to query processing.
+
+Table~\ref{tab: chunk size} shows comparisons of average partition lengths for different indexes, optimal has larger partition lengths but smaller index size than coarse and discreet, proving the fact it can better exploit the local clustering of the posting list. Discreet and coarse do not differ much from each other, as they can only approximately locate an exception and build a chunk in front of it. Next we show these lengths also influence query processing speed.
+
 \begin{table}
 	\centering
 	\caption{Comparison of construction time, and average bits per element of each component}
 	\renewcommand{\arraystretch}{1.0}
 	\setlength\tabcolsep{9pt}
-	\begin{tabular}{@{}l*{4}{r}} \toprule
-		\multirow{2}*{methods} & \multicolumn{1}{c}{compress} & \multicolumn{1}{c}{docid} & \multicolumn{1}{c}{freq} & \multicolumn{1}{c}{decompress} \\
-		&\multicolumn{1}{c}{\textbf{sec}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{sec}} \\ \midrule
-		discreet & 870.70 & 4.40 & 2.32 & 99.46 \\
-		coarse & 785.94 & 4.66 & 2.41 & 99.09 \\ \midrule
-		optimal & 2638.91 & 4.05 & 2.19 & 86.11 \\
-		uniform & 1615.94 & 4.63 & 2.40 & 88.61 \\
-		OptPFOR & 688.90 & 4.55 & 2.34 & 49.43 \\
+	\begin{tabular}{@{}ll*{4}{r}}
+		\toprule
+		\multirow{2}*{collection} & \multirow{2}*{methods} & \multicolumn{1}{c}{compress} & \multicolumn{1}{c}{docid} & \multicolumn{1}{c}{freq} & \multicolumn{1}{c}{decompress} \\
+		& &\multicolumn{1}{c}{\textbf{sec}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{sec}} \\
+		\midrule
+		\multirow{5}*{GOV2} & discreet & 870.70 & 4.40 & 2.32 & 99.46 \\
+		& coarse & 785.94 & 4.66 & 2.41 & 99.09 \\
+		\cmidrule(l){2-6}
+		& optimal & 2638.91 & 4.05 & 2.19 & 86.11 \\
+		& uniform & 1615.94 & 4.63 & 2.40 & 88.61 \\
+		& OptPFOR & 688.90 & 4.55 & 2.34 & 49.43 \\
+		\midrule
+		\multirow{5}*{Common Crawl} & discreet & 870.70 & 4.40 & 2.32 & 99.46 \\
+		& coarse & 785.94 & 4.66 & 2.41 & 99.09 \\
+		\cmidrule(l){2-6}
+		& optimal & 11983.7 & 7.35 & 2.83 & 177.887 \\
+		& uniform & 645.95 & 7.73 & 3.05 & 187.42 \\
+		& OptPFOR & 1520.90 & 7.46 & 3.13 & 113.69 \\
 		\bottomrule
 		\label{tab: size and speed}
 	\end{tabular}
 \end{table}
+
+%\begin{table}
+%	\caption{Comparison of construction time, and average bits per element of each component}
+%	\begin{center}
+%		\renewcommand{\arraystretch}{1.4}
+%		\setlength\tabcolsep{6pt}
+%		\begin{tabular}{c*{2}{*{2}{>{\columncolor[gray]{.9}}r}rr}}
+%			\toprule
+%			\multirow{3}*{methods}& \multicolumn{4}{c}{GOV2} & \multicolumn{4}{c}{Common Crawl} \\
+%			\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+%			& \multicolumn{1}{c}{compress} & \multicolumn{1}{c}{docid} & \multicolumn{1}{c}{freq} & \multicolumn{1}{c}{decompress} & \multicolumn{1}{c}{compress} & \multicolumn{1}{c}{docid} & \multicolumn{1}{c}{freq} & \multicolumn{1}{c}{decompress} \\ 
+%			& \multicolumn{1}{c}{\textbf{sec}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{sec}} & \multicolumn{1}{c}{\textbf{sec}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{bpi}} & \multicolumn{1}{c}{\textbf{sec}} \\
+%			\midrule
+%			\bottomrule
+%			\label{tab:compression speed}
+%		\end{tabular}
+%	\end{center}
+%\end{table}
 
 \begin{table}
 	\centering
