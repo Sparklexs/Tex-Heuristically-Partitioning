@@ -37,7 +37,7 @@
 
 \begin{document}
 
-\mainmatter  % start of an individual contribution
+\mainmatter % start of an individual contribution
 
 % first the title is needed
 \title{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
@@ -51,7 +51,7 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Xingshen Song\inst{1} \and Kun Jiang\inst{2}\and  Yuexiang Yang\inst{1}}
+\author{Xingshen Song\inst{1} \and Kun Jiang\inst{2}\and Yuexiang Yang\inst{1}}
 %
 \authorrunning{Xingshen Song, Kun Jiang, Jie He and Yuexiang Yang}
 % (feature abused for this document to repeat the title also on left hand pages)
@@ -97,39 +97,39 @@ Experimental results on TREC GOV2 document collection show that our method makes
 
 \section{Introduction}\label{sec:intro}
 
-%Due to its simplicity and flexibility, inverted index gains a large amount of popularity among modern IR systems, especially in large scale search engines, inverted index is now adopted as the core component to fast respond to enormous queries. In its most basic and popular form, an inverted index is a collection of sorted lists of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}. Growing size of collection and high query efficiency requirement have appealed a large amount of research to compress the space occupancy of the index and speed up the query processing.
+%Due to its simplicity and flexibility, inverted index gains a large amount of popularity among modern IR systems, especially in large scale search engines, inverted index is now adopted as the core component to fast respond to enormous queries. In its most basic and popular form, an inverted index is a collection of sorted lists of integers \cite{manning2008introduction,witten1999managing,zobel2006inverted}. Growing size of collection and high query efficiency requirement have appealed a large amount of research to compress the space occupancy of the index and speed up the query processing.
 The performance of Information Retrieval systems rely largely on the data structure they adopt.
 A well-designed data structure can juggle the mission of effectively storing related information and efficiently answering different kinds of queries.
-Due to its simplicity and flexibility, inverted index gains more popularity than other candidates among modern IR systems since 1950s\cite{buttcher2010information,witten1999managing}, especially in large scale search engines.
+Due to its simplicity and flexibility, inverted index gains more popularity than other candidates among modern IR systems since 1950s \cite{buttcher2010information,witten1999managing}, especially in large scale search engines.
 However, as the rapid growth of the web, inverted index is facing an formidable performance challenge by billions of increasing documents and highly-concurrent queries.
 Index compression is an important technique to mitigate such problem for it can yield a twofold advantage.
-The immediate effect is that reduced space occupancy allows more data to be stored in limited store unit, more importantly, compression makes it possible to build in-memory index thus reducing the time of data transfer from slow memories\cite{manning2008introduction,zobel2006inverted}.
+The immediate effect is that reduced space occupancy allows more data to be stored in limited store unit, more importantly, compression makes it possible to build in-memory index thus reducing the time of data transfer from slow memories \cite{manning2008introduction,zobel2006inverted}.
 
 %inverted index is now adopted as their core component to maintain billions of documents and respond to enormous queries.
-%In its most basic and popular form, an inverted index is a collection of sorted sequences of integers\cite{manning2008introduction,witten1999managing,zobel2006inverted}.
+%In its most basic and popular form, an inverted index is a collection of sorted sequences of integers \cite{manning2008introduction,witten1999managing,zobel2006inverted}.
 %Growing size of data and stringent query processing efficiency requirement have appealed a large amount of research, with the aim to compress the space occupancy of the index and speed up the query processing.
 
 The inverted index can be seen as a collection of posting lists where each list $I_t$ is mapped to one term \textit{t} of vocabulary.
 Inside $I_t$ are postings containing information about the occurrences of \textit{t} in one particular document \textit{d}, typically the \textit{docid}, the \textit{frequency}, and possibly the \textit{position} and other information.
-These postings are always ordered by docid or frequency to fit different IR tasks\cite{navarro2010dual}.
-To facilitate both compression and query processing, each list is treated as separate data stream and components inside are stored in a non-interleaved way\cite{anh2010index}. 
+These postings are always ordered by docid or frequency to fit different IR tasks \cite{navarro2010dual}.
+To facilitate both compression and query processing, each list is treated as separate data stream and components inside are stored in a non-interleaved way \cite{anh2010index}. 
 
 Many techniques for inverted index compression have been studied over years, see \cite{catena2014inverted,trotman2014compression} for more details.
 Among these techniques, splitting posting list into \textit{blocks} (or \textit{chunks}) has been demonstrate to be an efficient way and widely adopted by many encoders.
 For that by keeping blocks separately accessible we can expect faster decoding speed and hierarchical structure.
-In addition, variable-sized blocks can utilize the clustering property of list to beat the entropy\cite{silvestri2010vsencoding,moffat2000binary}.
+In addition, variable-sized blocks can utilize the clustering property of list to beat the entropy \cite{silvestri2010vsencoding,moffat2000binary}.
 However, finding optimal partitions using variable-sized blocks can be very time consuming and the decoding procedure is delayed by additional cache miss.
 
-%The compression techniques can be roughly divided into two categories,namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}\cite{catena2014inverted,silvestri2010vsencoding}.
+%The compression techniques can be roughly divided into two categories,namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders} \cite{catena2014inverted,silvestri2010vsencoding}.
 %The integer-oriented encoders assign an unique codeword to each integer of the posting list and are hard to decode because of plenty of bitwise operations.
-%Recent work makes progress by optimizing byte/word-aligned encoders using SIMD instructions\cite{stepanov2011simd,trotman2014compression}.
+%Recent work makes progress by optimizing byte/word-aligned encoders using SIMD instructions \cite{stepanov2011simd,trotman2014compression}.
 %The list-oriented encoders are designed to exploit the cluster of neighboring integers and are much faster to decode, however, inferior in compression ratio.
 
 While state-of-the-art techniques do obtain excellent space-time trade-offs, compression time is always neglected as one evaluating criterion.
 This can be attributed to the fact that index is always preprocessed offline before deployment, and once being taken into effect, update can be committed in an asynchronous and parallel manner.
 However, timely update for unexpected queries is becoming more and more stringent in search engine, traditional methods do not fit this scenario any more.
-Until recently researchers begin to use breakthroughs in compact data structure to bear on problems of optimizing inverted index\cite{navarro2010dual,petri2014score}.
-The newly proposed Partitioned Elias-Fano index (PEF), introduces a new representation of inverted index storing the complete form rather than differences (or \textit{gaps}) between adjacent values\cite{ottaviano2014partitioned,vigna2013quasi}.
+Until recently researchers begin to use breakthroughs in compact data structure to bear on problems of optimizing inverted index \cite{navarro2010dual,petri2014score}.
+The newly proposed Partitioned Elias-Fano index (PEF), introduces a new representation of inverted index storing the complete form rather than differences (or \textit{gaps}) between adjacent values \cite{ottaviano2014partitioned,vigna2013quasi}.
 It is shown that this kind of index supports fast random access and search operation.
 An optimal partitioning strategy is also adopted using approximation algorithm, theoretically guaranteeing a solution at most $\left(1+\varepsilon\right)$ times larger than the best one can be found in linear-time, for any $ \varepsilon \in \left(0,1\right) $.
 
@@ -144,15 +144,15 @@ We demonstrate that the block size follows the same regularity with its space oc
 {\color{red}{say something about the collection, gov2 and common crawl.}}
 Last we perform an experiment that shows compression time is significantly reduced against the original work while its space occupancy and decompression time maintains comparable to the original one.
 
-\section{Index Compression and Partitioning Strategies}\label{sec:II}
+\section{Index Compression and Partitioning Strategies}\label{sec:background}
 
 Compressing the index has long been a key issue for researchers to ensure both the time- and space-efficiency of inverted index, various encoders with different properties have been put up to settle this problem, and they can be roughly divided into two classes, namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}.
 
 The integer-oriented encoders assign an unique codeword to each integer of the input list, then the compression procedure turns into a mapping or substitution from the integer space to code space.
-As they compress integers without considering their neighborings, the integer-oriented encoders are also called oblivious encoders\cite{catena2014inverted}, such as \textit{unary code, Elias Gamma/Delta codes \emph{and} Golomb/Rice codes}.
-Most integer-oriented encoders are hard to decode since they need bitwise operations to cross computer word boundaries, so byte/word-aligned encoders, are proposed to solve this problem, like \textit{Variable Byte} and \textit{Group Varint}, more importantly, they can be further improved by SIMD instructions of modern CPUs\cite{stepanov2011simd,trotman2014compression}.
+As they compress integers without considering their neighborings, the integer-oriented encoders are also called oblivious encoders \cite{catena2014inverted}, such as \textit{unary code, Elias Gamma/Delta codes \emph{and} Golomb/Rice codes}.
+Most integer-oriented encoders are hard to decode since they need bitwise operations to cross computer word boundaries, so byte/word-aligned encoders, are proposed to solve this problem, like \textit{Variable Byte} and \textit{Group Varint}, more importantly, they can be further improved by SIMD instructions of modern CPUs \cite{stepanov2011simd,trotman2014compression}.
 
-List-oriented encoders are designed to exploit the cluster of neighboring integers, each time a fixed-sized or variable-sized group of integers is binary packed with an uniform bit width, providing equivalent compression ratio and faster decoding speed, the technique used by these encoders is called \textit{frame-of-reference}(FOR), or \textit{binary packing}\cite{goldstein1998compressing}.
+List-oriented encoders are designed to exploit the cluster of neighboring integers, each time a fixed-sized or variable-sized group of integers is binary packed with an uniform bit width, providing equivalent compression ratio and faster decoding speed, the technique used by these encoders is called \textit{frame-of-reference}(FOR), or \textit{binary packing} \cite{goldstein1998compressing}.
 Basically, their compression ratios are inferior to these of the first category as a batch of integers are encoded indiscriminately, and useless zeros are filled in the codeword to keep word-aligned.
 However, when decoded, list-oriented encoders can obtain an entire block while the formers just decode one integer at a time.
 More importantly, with the help of \textit{skip pointers} or \textit{skip list}, it is possible to step along the codewords compressed by list-oriented encoders and stop when the required number of blocks has been bypassed.
@@ -162,15 +162,15 @@ Some of these encoders are \textit{Simple Family}, AFOR and \textit{Patched} FOR
 One thing to be noted is that list-oriented encoders may cost equivalent time to compress the posting list as the integer-oriented encoders even they are designed to compress a list of integers at the same time.
 Before compressing, a partitioning strategy is needed to traverse the whole input list to search for an optimal partition, in consideration of compression ratio and decoding speed.
 Even after that, an uniform bit width has to be chosen to fit every element in for each block.
-Compression techniques like the Simple Family\cite{anh2005inverted,anh2010index}, enumerates all the possible partitioning cases to choose the suitable decision; OptPFOR\cite{yan2009inverted} needs an additional computation to choose the optimal proportion of exceptions in each block in order to achieve a better space efficiency.
-In the last few years there is a surge of partitioning schemes to accelerate the compression procedure\cite{lemire2015decoding,ottaviano2014partitioned}.
+Compression techniques like the Simple Family \cite{anh2005inverted,anh2010index}, enumerates all the possible partitioning cases to choose the suitable decision; OptPFOR \cite{yan2009inverted} needs an additional computation to choose the optimal proportion of exceptions in each block in order to achieve a better space efficiency.
+In the last few years there is a surge of partitioning schemes to accelerate the compression procedure \cite{lemire2015decoding,ottaviano2014partitioned}.
 
 There is a common view that traditional methods which use a fixed-sized block to uniformly partition a sequence fail to exploit the nature of the underlying sequence, that the list is formed by clusters of consecutive integers.
 Indeed, the sequence contains postings of documents crawled from different domains, when the docids reordered by their URLs, more and larger clusters of integers which are very close to each other will show up.
 We cannot expect uniform partitioning to be optimal since clusters are not likely to be aligned with each fixed-sized block.
 A more practical way to enhance compression efficiency is to use blocks with variable size to adapt the encoding to the value distribution.
 
-%Here we do not take PFOR into account even though it reaches a good compression performance and fast decoding speed, yet it adopts an uniform partitioning scheme and its compression phase cannot be efficiently implemented, for that PFOR requires a complex heuristic that require multiple passes over the values of a block in order to find the bit width and the set of exceptions providing the highest compression\cite{delbru2010adaptive}. The basic form of FOR will provide a better tolerance against exceptions with variable block size and faster encoding speed without extra operations to separately store these exceptions.
+%Here we do not take PFOR into account even though it reaches a good compression performance and fast decoding speed, yet it adopts an uniform partitioning scheme and its compression phase cannot be efficiently implemented, for that PFOR requires a complex heuristic that require multiple passes over the values of a block in order to find the bit width and the set of exceptions providing the highest compression \cite{delbru2010adaptive}. The basic form of FOR will provide a better tolerance against exceptions with variable block size and faster encoding speed without extra operations to separately store these exceptions.
 
 AFOR and method proposed by \cite{anh2004index} give an initiative trial on optimal partitioning scheme.
 AFOR breaks a fixed-sized block into multiple frames of variable length, and arrange different combinations to achieve better compression.
@@ -184,7 +184,7 @@ VSEncoding further extends AFOR with more flexibility to partition a sequence vi
 Several variant implementations are provided on its website\footnote{\url{http://integerencoding.isti.cnr.it/}}, for example, VSE-R achieves the best compression ratio and VSE-Simple achieves the best decoding speed.
 Even compared with SIMD-accelerated encoders, VSEncoding still shows some unique advantages.
 Needless to say, it holds a lot of potential but needs elaborate optimization. The recently proposed PEF sheds light upon how to accelerate the compression performance of VSEncoding with approximation algorithms, PEF identifies the minimum-space partition by omitting inefficient schemes, thus time complexity is greatly reduced.
-%index built using PEF is a two-level data structure which supports fast queries on the original sequence, PEF first partitions the sequence into contiguous \textit{chunks} so that each chunk can better adapt to local statistics, the upper level stores lists of chunk endpoints and boundary elements and the lower level stores elements within each chunk, both of which are compressed using Elias-Fano code\cite{vigna2013quasi}. PEF designs a linear time optimization algorithm which identifies the minimum-space partition up to an arbitrarily small approximation factor and its core idea has been mentioned in Section~\ref{sec:introduction}.
+%index built using PEF is a two-level data structure which supports fast queries on the original sequence, PEF first partitions the sequence into contiguous \textit{chunks} so that each chunk can better adapt to local statistics, the upper level stores lists of chunk endpoints and boundary elements and the lower level stores elements within each chunk, both of which are compressed using Elias-Fano code \cite{vigna2013quasi}. PEF designs a linear time optimization algorithm which identifies the minimum-space partition up to an arbitrarily small approximation factor and its core idea has been mentioned in Section~\ref{sec:introduction}.
 
 \begin{figure}
 	\centering
@@ -211,17 +211,17 @@ Since dynamic programming is inefficient and greedy mechanism is too coarse, a m
 %Thus, the problem of optimally partitioning a list is reduced to the problem of Single-Source Shortest Path(SSSP) Problem.
 %		
 %However, a trivial traversal may not suffice to obtain an efficient solution for this problem, as the graph $\mathcal{G}$ is complete with $\Theta\left( n^{2}\right)$ edges, even partitioning posting lists with thousands of integers will be intolerable.
-%Anh et al.\cite{anh2004index} and Delbru et al.\cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine.
-%Fabrizio\cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
+%Anh et al. \cite{anh2004index} and Delbru et al. \cite{delbru2012searching} adopt a greedy mechanism to partition the lists, the difference between them is that the former partitions the lists under a static table driven approach while the latter uses a set of fixed-sized sliding windows to determine.
+%Fabrizio \cite{silvestri2010vsencoding} finds the optimal partition under a \textit{dynamic programming} approach but with limited options for partition lengths (say \textit{h}), reducing its time complexity from $O(n^{2})$ to $O(nh)$, but still barely satisfying in practice.
 %		
 %Since dynamic programming is inefficient and greedy mechanism is too coarse, a more feasible way will be using an elaborate approximation algorithm to find slightly suboptimal solutions, which reduce the time and space complexities to linear.
 
-\section{Method Evaluation Criteria}\label{sec:III}
+\section{Method Evaluation Criteria}\label{sec:criteria}
 
 Compression techniques are optimized under two criteria, namely \textit{decompression time} and \textit{space occupancy}.
 Different encoders yield different space-time trade-offs, generally, integer-oriented encoders tend to be more space-efficient while list-oriented encoders focus on time efficiency.
 \textit{Compression time} stays a low profile in the literature, as it does not make a difference for practical use, many encoders pursue a better performance at the expense of prolonging compression time.
-Recently it begins to gain attention as one criterion to evaluate a compression technique\cite{lemire2015decoding,ottaviano2015optimal}.
+Recently it begins to gain attention as one criterion to evaluate a compression technique \cite{lemire2015decoding,ottaviano2015optimal}.
 
 \textit{Pareto-Optimal Compression.}
 Taking the compression time into account, we get an extended tri-criteria to evaluate the performance of compression techniques.
@@ -243,7 +243,7 @@ Points beyond the curve are either superior or inferior to the average (i.e., VB
 Generally, these points cluster into three slots according to their decoding speed, broadly consistent with three stages in the evolution of index compression technologies.
 The first stage is integer-oriented encoders proposed in early years, whose purpose is to create the smallest index, regardless of the decoding speed.
 Points represent these encoders can be found at the bottom right conner.
-Note there is one exception that IPC is a list-oriented encoder proposed by Moffat \& Stuiver\cite{moffat2000binary}, however, it reaches the best compression at the cost of worst decoding speed.
+Note there is one exception that IPC is a list-oriented encoder proposed by Moffat \& Stuiver \cite{moffat2000binary}, however, it reaches the best compression at the cost of worst decoding speed.
 The second stage falls into the slot above the first one, encoders begin to pursue faster decoding speed with slightly worse compression ratio.
 We can observe that these encoders even get slower compression speed than those of the first stage.
 The classical Variable Byte and AFOR both get favorable encoding and decoding speed, however, with larger space occupancy, especially the latter one.
@@ -252,14 +252,14 @@ This kind of encoders tend occupy more spaces because it is designed to process 
 Using SIMD is superior in encoding/decoding as a whole, however, when accessing a specified position or element, more data have to be decoded.
 
 \textit{Partitioned Elias-Fano Index.}
-We also emphasize PEF by two straight lines in Figure~\ref{fig:performance}, as it reaches a space occupancy competitive with integer-oriented encoders while keeping a reasonable decoding speed. It is a two-level data structure which partitions the posting list into Elias-Fano (EF) represented \textit{chunks} to adapt to its local statistics and stores pointers to these chunks in the upper EF sequence. Study shows that it is efficient in random access and search operations but slow in sequential decoding\cite{ottaviano2015optimal,vigna2013quasi}.
+We also emphasize PEF by two straight lines in Figure~\ref{fig:performance}, as it reaches a space occupancy competitive with integer-oriented encoders while keeping a reasonable decoding speed. It is a two-level data structure which partitions the posting list into Elias-Fano (EF) represented \textit{chunks} to adapt to its local statistics and stores pointers to these chunks in the upper EF sequence. Study shows that it is efficient in random access and search operations but slow in sequential decoding \cite{ottaviano2015optimal,vigna2013quasi}.
 
 PEF describes a suboptimal partitioning strategy which finds the solution in linear time by generating a pruned DAG on the posting list.
 %$O\left(n\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ time and $O\left(\log_{1+\varepsilon}\frac{1}{\varepsilon}\right)$ space, and it is an $\left(1+\varepsilon\right)$-approximation algorithm to the optimal one, for any given $\varepsilon\in\left(0,1\right)$.
 However, it is still prohibitive in compression time, because the compressed size and decoding performance of the index rely heavily on the approximation factors, to obtain the best solution these factors need to be carefully engineered for different collection.
 Next section we describe a faster algorithm preserving the same approximation guarantee.
 
-\section{Linear Partitioning Strategy}\label{sec:IIII}
+\section{Linear Partitioning Strategy}\label{sec:our method}
 % verbose here, emphasize the method
 \subsection{Partitioned Elias-Fano Index}
 
@@ -323,11 +323,11 @@ As shown in Figure~\ref{fig:exceptions}.
 It remains to describe how to locate the chunk which contains exceptions, given a chunk $\left(v_{i},v_{j_{h}}\right)$, we only consider comparing with its former one, namely $\left(v_{i},v_{j_{h-1}}\right)$, inspired by Markov process.
 Thus we have their partition lengths and partition universes as follow:
 \begin{align}
-n_{h} &= j_{h}-i, & u_{h} &= v_{j_{h}} - v_{i} \label{equ: chunk h}\\
-n_{h-1} &= j_{h-1}-i, &  u_{h-1} &= v_{j_{h-1}} - v_{i}\label{equ: chunk h-1}
+n_{h} &= j_{h}-i, & u_{h} &= v_{j_{h}} - v_{i} \label{equ:chunk h}\\
+n_{h-1} &= j_{h-1}-i, & u_{h-1} &= v_{j_{h-1}} - v_{i}\label{equ:chunk h-1}
 \end{align}
 and their bit costs
-\begin{equation}\label{equ: cost ratio}
+\begin{equation}\label{equ:cost ratio}
 {c\left(v_{i},v_{j_{h}}\right)}/{c\left(v_{i},v_{j_{h-1}}\right)}=1+\varepsilon_{2}
 \end{equation}
 However, different encodings are used in PEF to overcome the space inefficiencies of Elias-Fano in representing dense chunks.
@@ -340,7 +340,7 @@ In spite of it is a fairly rare occurrence, once occurs it does sharply reduce t
 
 To sum up, there are three representations $ \mathcal{E} $ for different chunks. $ \mathcal{E}=0 $: \textit{non-encoding} with $c\left(v_{i},v_{j_{h}}\right)=0$, if partition length $n_{h}$ equals to the universe $u_{h}$; $ \mathcal{E}=1 $: \textit{bitvector} with $c\left(v_{i},v_{j_{h}}\right)=u_{h}$, if $n_{h}\geqslant \frac{u_{h}}{4}$ and $ \mathcal{E}=2 $: EF with $c\left(v_{i},v_{j_{h}}\right)=n_{h}\lceil\log \frac{u_{h}}{n_{h}}\rceil+2n_{h}$, if $n_{h}<\frac{u_{h}}{4}$.
 When we are about to identify chunks contain exceptions, we have to enumerate all the possible combinations of two consecutive chunks to find out corresponding reasonable incremental lengths.
-That is, given Eq.~\eqref{equ: chunk h}~\eqref{equ: chunk h-1}~\eqref{equ: cost ratio}, we need to calculate $ \frac{n_h}{n_{h-1}} $ for $ \mathcal{E}[h-1] $ and $ \mathcal{E}[h] $, $ \mathcal{E} \in (0,1,2) $.
+That is, given Eq.~\eqref{equ:chunk h}~\eqref{equ:chunk h-1}~\eqref{equ:cost ratio}, we need to calculate $ \frac{n_h}{n_{h-1}} $ for $ \mathcal{E}[h-1] $ and $ \mathcal{E}[h] $, $ \mathcal{E} \in (0,1,2) $.
 Actually there are only 4 combinations to consider since \textit{non-encoding} is unlikely to be leaded by the other two and more sensitive to exceptions.
 
 Take $ \mathcal{E}[h-1]=1 $ and $ \mathcal{E}[h]=2 $ for example, then
@@ -355,9 +355,9 @@ Others get the same conclusion by deduction (See the whole procedure in APPENDIX
 \end{equation}
 as the same approximation factor with that of $\varepsilon-maximal$ edges.
 Thus the whole procedure, which can be done within a single pass, is recast into using one window to expand its size from a starting vertex, building a chunk when current $\varepsilon-maximal$ edge is $\left(1+\varepsilon_{2}\right)$ times larger than the previous one and moving the starting vertex to $v_{h-1}+1$. A more space-efficient way is to traverse the interval $\left(v_{h},v_{h-1}\right)$ to determine a better cut-off vertex, which increases time complexity by no more than $\left(1+\varepsilon_{2}\right)$, and a minimum partition length is set to 8 to avoid slow-start and fragmentation of chunks.
-Pseudo code of the above space-efficient procedure can be found in Algorithm~\ref{alg: optimal partition}.
+Pseudo code of the above space-efficient procedure can be found in Algorithm~\ref{alg:optimal partition}.
 
-\begin{algorithm} \label{alg: optimal partition}
+\begin{algorithm} \label{alg:optimal partition}
 	%	\SetAlgoNoLine
 	\caption{Optimal partitioning}
 	\KwIn{Posting list $ \mathcal{S}\left[1,n+1\right] $, fixed cost $ F $ and approximation factor $ \varepsilon_1, \varepsilon_2 $}
@@ -421,7 +421,7 @@ We use the posting lists extracted from the following two collections:
 
 Since the Common Crawl corpus is too large to fit in one machine, we only extract a small part of the data crawled in February 2016.
 Documents from these two collections are prepared by applying Porter stemmer after removing stopwords, then the docids are reordered by the lexicographic order of URLs.
-Table~\ref{tab: collection statistics} compares these two collections using some basic statistics.
+Table~\ref{tab:collection statistics} compares these two collections using some basic statistics.
 
 \begin{table}
 	\centering
@@ -432,12 +432,12 @@ Table~\ref{tab: collection statistics} compares these two collections using some
 		& \multicolumn{1}{c}{GOV2} & \multicolumn{1}{c}{Common Crawl} \\
 		\midrule
 		Documents & 25,203,921 & 17,157,948 \\
-		Terms  & 15,324,160 & 51,990,893 \\
+		Terms & 15,324,160 & 51,990,893 \\
 		Pointers & 4,655,778,182 & 9,118,361,737 \\
 		Document Length(avg.) & 645.25 & 2151.83 \\
 		Posting List Length(avg.) & 303.82 & 173.38 \\
 		\bottomrule
-		\label{tab: collection statistics}
+		\label{tab:collection statistics}
 	\end{tabular}
 \end{table}
 
@@ -461,18 +461,18 @@ From the figure we can gain an insight into these two parameters: $\varepsilon_{
 We can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception.
 $\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions.
 In order to obtain better performances, $ \left( \varepsilon_1,\varepsilon_2 \right) $ must be adjusted to different collections and compression techniques.
-Details of the configuration can be seen in Table~\ref{tab: parameter}.
+Details of the configuration can be seen in Table~\ref{tab:parameter}.
 We can see that $ \varepsilon_1 $ stays same for different methods on the same collection, showing that it is relevant to the statistics of collection.
 
 \begin{figure}
 	\centering
 	\subfloat[fixing $\varepsilon_{1}=0$, varying $\varepsilon_{2}$ from 0.1 to 1]{
 		\label{fig:epsilon:b}
-		\includegraphics[width=0.65\linewidth]{eps22}
+		\includegraphics[width=0.65\linewidth]{eps2}
 	}\\
 	\subfloat[fixing $\varepsilon_{2}$ to values got above, varying $\varepsilon_{1}$ from 0 to 0.1]{
 		\label{fig:phi:a}
-		\includegraphics[width=0.65\linewidth]{eps11}
+		\includegraphics[width=0.65\linewidth]{eps1}
 	}
 
 	\caption{Influences of the parameters $\varepsilon_{2}$ and $\varepsilon_{1}$ on two partitioning strategies.}
@@ -493,7 +493,7 @@ We can see that $ \varepsilon_1 $ stays same for different methods on the same c
 			\textit{coarse} & \multirow{2}*{$ \left(0.03,0.8\right) $} & \multirow{2}*{$ \left(0,0.7\right) $} \\
 			\textit{discreet} & & \\
 			\bottomrule
-			\label{tab: parameter}
+			\label{tab:parameter}
 		\end{tabular}
 	\end{center}
 \end{table}
@@ -505,12 +505,12 @@ In our experiment, parallelization prolongs construction times for these I/O-bou
 Even \textit{optimal} is accelerated, the procedure of finding the approximation parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ is still a repetitive work, which costs too much time.
 Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
 
-\textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
+\textit{Compression.} Table~\ref{tab:size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
 Firstly we compare teh construction time of these methods.
 There is no doubt that \textit{uniform} gets the fastest speed on two collections, since it chooses the simplest partitioning strategy without extra calculations, even compared with OptPFOR, it still more than doubles the compression speed.
 It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy.
 Also note that compression time of most methods grows linearly as the collection size except \textit{optimal}.
-From table~\ref{tab: collection statistics}, we know that Common Crawl has nearly twice as many pointers as GOV2, however, \textit{optimal} costs 5 times longer time to compress.
+From table~\ref{tab:collection statistics}, we know that Common Crawl has nearly twice as many pointers as GOV2, however, \textit{optimal} costs 5 times longer time to compress.
 This implies \textit{optimal} might not be a good choice for large collections in practice.
 
 Next we compare the space occupancy using these methods.
@@ -545,7 +545,7 @@ Although all EF-based methods decompress much slower than OptPFOR, we will show 
 		& uniform & 645.95 & 7.73 & 3.05 & 187.42 \\
 		& OptPFOR & 1520.90 & 7.46 & 3.13 & 113.69 \\
 		\bottomrule
-		\label{tab: size and speed}
+		\label{tab:size and speed}
 	\end{tabular}
 \end{table}
 %\begin{table}
@@ -566,7 +566,7 @@ Although all EF-based methods decompress much slower than OptPFOR, we will show 
 %	\end{center}
 %\end{table}
 
-Table~\ref{tab: chunk size} shows comparisons of average partition lengths for different methods except \textit{uniform} and OptPFOR as they use fixed-sized block (128).
+Table~\ref{tab:chunk size} shows comparisons of average partition lengths for different methods except \textit{uniform} and OptPFOR as they use fixed-sized block (128).
 Results on GOV2 and Common Crawl are contrary to each other, we can notice that average partition length on GOV2 for \textit{optimal} is larger than \textit{coarse} and \textit{discreet}, nonetheless, smaller on Common Crawl.
 It is likely caused by the local statistics of collections, for Common Crawl has less documents but more terms, \textit{docids} of its posting list trend to be more tightened together.
 However, \textit{optimal} seems to find the better partition length, larger or smaller both lead to a decline of compression ratio.
@@ -588,15 +588,15 @@ Next we show these lengths also influence query processing speed.
 		\textit{discreet} & 194 & 331 & 869 & 750 \\
 		\textit{coarse} &187 & 319 & 651 & 784 \\
 		\bottomrule
-		\label{tab: chunk size}
+		\label{tab:chunk size}
 	\end{tabular}
 \end{table}
 
 \subsection{Query efficiency}
 
-In order to explore the efficiency differences caused by partitioning strategies, the experiment adopts four widely-used methods of ranked query to find the top-20 results, DAAT\_AND, DAAT\_OR, WAND and Maxscore. We randomly select 4000 terms from the lexicon, any of which has a document frequency within the range $(10^{5},10^{6})$, and we regroup them into 1000 queries every 4 terms, avoiding the bias brought by short posting lists while highlighting advantage of random access.
+In order to explore the efficiency differences caused by partitioning strategies, the experiment adopts four widely-used methods of ranked query to find the top-20 results, DAAT\_AND, DAAT\_OR, WAND and Maxscore. We randomly select 4000 terms from lexicon of the index, any of which has a document frequency within the range $(10^{5},10^{6})$, and we regroup them into 1000 queries every 4 terms, avoiding the bias brought by short posting lists while highlighting advantage of random access.
 
-As shown in Figure~\ref{fig:queries}, query time has been enlarged by involvements of multiple long posting lists, outliers can be as large as $10^{5}$ msec, however, most queries can be processed within hundreds of msec. Performances vary a lot among different processing methods,DAAT traverses the index in an exhaustive way, relying only on the throughput of postings. Needless to say, OptPFOR performs the best in DAAT and other indexes rank in accord with average partition lengths, the larger the length, the faster the speed. In detail, DAAT\_AND is the most efficient one as list intersection can cut off large of invalid postings, DAAT\_OR comes at a much higher cost as it cut nothing off, its rank also coincides with decompression speed shown in Table~\ref{tab: size and speed}. When it comes to dynamic pruning, PEF begins to gain an advantage over OptPFOR, also performance gaps among indexes again become unapparent, discreet and coarse even outperform optimal in WAND comparing both outliers and median. In general, results of different indexes do not differ much except those using DAAT\_OR, performances of discreet and coarse rank between optimal and uniform.
+As shown in Figure~\ref{fig:queries}, query time has been enlarged by involvements of multiple long posting lists, outliers can be as large as $10^{5}$ msec, however, most queries can be processed within hundreds of msec. Performances vary a lot among different processing methods,DAAT traverses the index in an exhaustive way, relying only on the throughput of postings. Needless to say, OptPFOR performs the best in DAAT and other indexes rank in accord with average partition lengths, the larger the length, the faster the speed. In detail, DAAT\_AND is the most efficient one as list intersection can cut off large of invalid postings, DAAT\_OR comes at a much higher cost as it cut nothing off, its rank also coincides with decompression speed shown in Table~\ref{tab:size and speed}. When it comes to dynamic pruning, PEF begins to gain an advantage over OptPFOR, also performance gaps among indexes again become unapparent, discreet and coarse even outperform optimal in WAND comparing both outliers and median. In general, results of different indexes do not differ much except those using DAAT\_OR, performances of discreet and coarse rank between optimal and uniform.
 
 \begin{figure}
 	\centering
@@ -628,13 +628,13 @@ For completeness of exposition we report here the deduction of reasonable ratios
 
 \begin{enumerate}
 	
-\item \label{itm: rb2rb}
+\item \label{itm:rb2rb}
 Both chunks are represented using \textit{bitvector}, $ \mathcal{E}[1] = \mathcal{E}[2] = 1 $. Then
 \begin{align*}
 	c_2 & = u_2 & c_1 & = u_1 \\ 
 	n_2 & > \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
 \end{align*}
-Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j  $, we get
+Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j $, we get
 \begin{gather*}
 	\frac{u_2}{u_1} = \frac{u_1+k+j}{u_1}=1+\varepsilon_2\\
 	\frac{u_1+k+j}{n_1+k} < 4\\
@@ -646,7 +646,7 @@ k+j<4k<4n_1\cdot \varepsilon_2 \\
 \frac{n_2}{n_1}=\frac{n_1+k}{n_1} < \frac{n_1+ n_1\cdot \varepsilon_2}{n_1}=1+\varepsilon_2
 \end{gather*}
 
-\item \label{itm: ef2ef}
+\item \label{itm:ef2ef}
 Both chunks are represented using EF, $ \mathcal{E}[1] = \mathcal{E}[2] = 2 $. Then
 \begin{align*}
 c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor) \\ 
@@ -662,7 +662,7 @@ We get
  \frac{n_2}{n_1} \approx 1+ \varepsilon_2 
 \]
 
-\item \label{itm: rb2ef}
+\item \label{itm:rb2ef}
 The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $. Then
 \begin{align*}
 c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
@@ -678,7 +678,7 @@ we get
 	\frac{n_2}{n_1} \leq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
 \]
 
-\item \label{itm: ef2rb}
+\item \label{itm:ef2rb}
 The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $. Then
 \begin{align*}
 c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
@@ -696,13 +696,13 @@ we get
 \end{enumerate}
 
 Note that chunks represented using \textit{bitvector} are dense chunks, those using EF are sparser.
-So in previous case~\ref{itm: rb2ef}, chunks change from dense to sparse, exceptions are certainly encountered in the middle.
-As for case~\ref{itm: ef2rb}, chunks are becoming dense, it only happens under the situation with out exceptions.
+So in previous case~\ref{itm:rb2ef}, chunks change from dense to sparse, exceptions are certainly encountered in the middle.
+As for case~\ref{itm:ef2rb}, chunks are becoming dense, it only happens under the situation with out exceptions.
 
 We do not analyze chunks represented using \textit{non-encoding}, as they extreme cases that are rarely encountered, and their partition weights are set to be zero which makes them more sensitive to exceptions.
 Intuitively, \textit{non-encoding} cannot be leaded by EF or \textit{bitvector}, and it can be followed by the other two representations no matter how long its partition length is.
 In extreme case, we can set every single integer to be represented by \textit{non-encoding}, however, it does not compress at all and produces many more chunks. So chunks using \textit{non-encoding} are set to be at least longer than 8 integers and following the same upper bound as other cases.
 
-Thus we set the partition length ratio to be $ 1+\varepsilon_2 $, and once $ \frac{n_2}{n_1} < 1+ \varepsilon_2 $ for two consecutive chunks starting from the same position, we can certainly determine that an exception is encountered in the middle.  
+Thus we set the partition length ratio to be $ 1+\varepsilon_2 $, and once $ \frac{n_2}{n_1} < 1+ \varepsilon_2 $ for two consecutive chunks starting from the same position, we can certainly determine that an exception is encountered in the middle.
 
 \end{document}
