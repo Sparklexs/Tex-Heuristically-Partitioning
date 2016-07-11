@@ -226,57 +226,57 @@ Others get the same conclusion by deduction
 \end{equation}
 as the same approximation factor with that of $\varepsilon-maximal$ edges.
 Thus the whole procedure, which can be done within a single pass, is recast into using one window to expand its size from a starting vertex, building a chunk when current $\varepsilon-maximal$ edge is $\left(1+\varepsilon_{2}\right)$ times larger than the previous one and moving the starting vertex to $v_{h-1}+1$. A more space-efficient way is to traverse the interval $\left(v_{h},v_{h-1}\right)$ to determine a better cut-off vertex, which increases time complexity by no more than $\left(1+\varepsilon_{2}\right)$, and a minimum partition length is set to 8 to avoid slow-start and fragmentation of chunks.
-Pseudo code of the above space-efficient procedure can be found in Algorithm~\ref{alg: optimal partition}.
+%Pseudo code of the above space-efficient procedure can be found in Algorithm~\ref{alg: optimal partition}.
 
-\begin{algorithm} \label{alg: optimal partition}
-	%	\SetAlgoNoLine
-	\caption{Optimal partitioning}
-	\KwIn{Posting list $ \mathcal{S}\left[1,n+1\right] $, fixed cost $ F $ and approximation factor $ \varepsilon_1, \varepsilon_2 $}
-	\KwOut{Vector of optimal Partition $ P $}
-	Initialize sliding window $ w $, $ bounds=\left\lbrace F,F(1+\varepsilon_2),F(1+\varepsilon_2)^2,\dots, \frac{F}{\varepsilon_1} \right\rbrace $, $ l=0 $, $ nS[bounds.size] $, $p\left[ n \right]$ and $min\_cost \left[n\right] $\;
-	\For{$i=1;i<n+1;i$++}{
-		$ min\_cost \left[i\right]=+\infty $\;
-		$p[i]=0$\;
-	}
-	\While{$ w.end < n+1 $}{
-		\While{true}{
-			calculate cost of current window $ w.cost $\;
-			\If{$ w.end == n+1 $}{
-				$ p[w.end] = w.start $\;
-				$ min\_cost \left[w.end\right]=min\_cost[w.start]+w.cost $\;
-				\textbf{break}\;
-			}
-			\If{$ w.cost \geq bounds[l] $}{
-				$ nS[l] = w.size $\;
-				\If{$ l > 0\ \&\& \ nS[l-1] \geq 8 \ \&\& \ nS[l] < nS[l-1](1+\varepsilon_2) $}{
-					create a chunk from $ w.start $ with a length $ nS[l-1] $, namely $ n_1 $\;
-					move $ w.start $ forward $ nS[l-1] $\;
-					\While{$ w.size > 1 $}{
-						calculate $ w.cost $\;
-						\If{$min\_cost \left[w.start\right]+ w.cost < min\_cost \left[w.end\right] $}{
-							$min\_cost \left[w.end\right]=min\_cost[w.start]+w.cost $\;
-							$ p[w.end]=w.start $\;
-						}
-						$ w.start++ $\;
-					}
-					$ l=0 $\;
-					\textbf{break}\;
-				}
-				l++\;
-				\If{$ l == bounds.size $}{
-					create a chunk from $ w.start $ to $ w.end $\;
-					move $ w.start $ to $ w.end $\;
-					$ l=0 $\;
-					\textbf{break}\;
-				}
-			}
-			$ w.end++ $\;
-		}
-	}
-	$ P=\left\lbrace p\left[n+1\right], p\left[p\left[n+1\right]\right], p\left[p\left[p\left[n+1\right]\right]\right],\cdots\right\rbrace $\;
-	reverse the order of $ P $\;
-	return $ P $\;
-\end{algorithm}
+%\begin{algorithm} \label{alg: optimal partition}
+%	%	\SetAlgoNoLine
+%	\caption{Optimal partitioning}
+%	\KwIn{Posting list $ \mathcal{S}\left[1,n+1\right] $, fixed cost $ F $ and approximation factor $ \varepsilon_1, \varepsilon_2 $}
+%	\KwOut{Vector of optimal Partition $ P $}
+%	Initialize sliding window $ w $, $ bounds=\left\lbrace F,F(1+\varepsilon_2),F(1+\varepsilon_2)^2,\dots, \frac{F}{\varepsilon_1} \right\rbrace $, $ l=0 $, $ nS[bounds.size] $, $p\left[ n \right]$ and $min\_cost \left[n\right] $\;
+%	\For{$i=1;i<n+1;i$++}{
+%		$ min\_cost \left[i\right]=+\infty $\;
+%		$p[i]=0$\;
+%	}
+%	\While{$ w.end < n+1 $}{
+%		\While{true}{
+%			calculate cost of current window $ w.cost $\;
+%			\If{$ w.end == n+1 $}{
+%				$ p[w.end] = w.start $\;
+%				$ min\_cost \left[w.end\right]=min\_cost[w.start]+w.cost $\;
+%				\textbf{break}\;
+%			}
+%			\If{$ w.cost \geq bounds[l] $}{
+%				$ nS[l] = w.size $\;
+%				\If{$ l > 0\ \&\& \ nS[l-1] \geq 8 \ \&\& \ nS[l] < nS[l-1](1+\varepsilon_2) $}{
+%					create a chunk from $ w.start $ with a length $ nS[l-1] $, namely $ n_1 $\;
+%					move $ w.start $ forward $ nS[l-1] $\;
+%					\While{$ w.size > 1 $}{
+%						calculate $ w.cost $\;
+%						\If{$min\_cost \left[w.start\right]+ w.cost < min\_cost \left[w.end\right] $}{
+%							$min\_cost \left[w.end\right]=min\_cost[w.start]+w.cost $\;
+%							$ p[w.end]=w.start $\;
+%						}
+%						$ w.start++ $\;
+%					}
+%					$ l=0 $\;
+%					\textbf{break}\;
+%				}
+%				l++\;
+%				\If{$ l == bounds.size $}{
+%					create a chunk from $ w.start $ to $ w.end $\;
+%					move $ w.start $ to $ w.end $\;
+%					$ l=0 $\;
+%					\textbf{break}\;
+%				}
+%			}
+%			$ w.end++ $\;
+%		}
+%	}
+%	$ P=\left\lbrace p\left[n+1\right], p\left[p\left[n+1\right]\right], p\left[p\left[p\left[n+1\right]\right]\right],\cdots\right\rbrace $\;
+%	reverse the order of $ P $\;
+%	return $ P $\;
+%\end{algorithm}
 
 \section{Experiments}
 We use the posting lists extracted from the TREC GOV2 collection, which consists of 25.2 million documents and 32.8 million terms. All the terms have the Porter stemmer applied, stopwords are removed, and docids are reordered by the lexicographic order of URLs. All the implementations are carried out on an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz with 128GB of RAM and 12,288KB of cache. Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations. In all our runs, the whole inverted index is completely loaded into main memory, executions are reported as the mean of 4 consecutive replications.
@@ -284,10 +284,6 @@ We use the posting lists extracted from the TREC GOV2 collection, which consists
 We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (uniform) and $\varepsilon$-partitioned PEF (optimal).
 
 First of all, We experiment differences caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$. As coarse and discreet partition a posting list in a single pass, relying only on the total length. Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly. Figure~\ref{fig:parameter} shows the influences of them on index size, from which we can gain an insight into these two parameters: $\varepsilon_{2}$ determines the sensitivity to partitions which contains exceptions, and $\varepsilon_{1}$ determines the largest partition length which contains no exceptions, we can see index size is insensitive to $\varepsilon_{1}$ when it is nonzero, demonstrating the fact that most partitions cannot reach the largest length when encounter an exception. $\varepsilon_{2}$ used to be approximation bound, however index size is independent on it, as a small value will increase the number of partitions and a large one will yield too many long partitions. We set $\varepsilon_{2}=0.9$ and $\varepsilon_{1}=0.03$ in terms of performance.
-
-\textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies, adding OptPFOR-compressed index (OptPFOR) as a baseline. It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy. Discreet has obvious superiority compared with coarse, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes. The last column denotes time used for a sequential decompression of the index, discreet and coarse tends to use 10\% longer time to traverse the index than optimal and uniform, delayed by suboptimal partitions. Although all EF-based methods decompress much slower than OptPFOR, their advantages are embodied in random access when applied to query processing.
-
-Table~\ref{tab: chunk size} shows comparisons of average partition lengths for different indexes, optimal has larger partition lengths but smaller index size than coarse and discreet, proving the fact it can better exploit the local clustering of the posting list. Discreet and coarse do not differ much from each other, as they can only approximately locate an exception and build a chunk in front of it. Next we show these lengths also influence query processing speed.
 
 \begin{figure}
 	\centering
@@ -302,6 +298,10 @@ Table~\ref{tab: chunk size} shows comparisons of average partition lengths for d
 	\caption{Influences of the parameters $\varepsilon_{2}$ and $\varepsilon_{1}$ on two partitioning strategies.}
 	\label{fig:parameter}
 \end{figure}
+
+\textit{Compression.} Table~\ref{tab: size and speed} shows the performances of different partitioning strategies, adding OptPFOR-compressed index (OptPFOR) as a baseline. It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy. Discreet has obvious superiority compared with coarse, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes. The last column denotes time used for a sequential decompression of the index, discreet and coarse tends to use 10\% longer time to traverse the index than optimal and uniform, delayed by suboptimal partitions. Although all EF-based methods decompress much slower than OptPFOR, their advantages are embodied in random access when applied to query processing.
+
+Table~\ref{tab: chunk size} shows comparisons of average partition lengths for different indexes, optimal has larger partition lengths but smaller index size than coarse and discreet, proving the fact it can better exploit the local clustering of the posting list. Discreet and coarse do not differ much from each other, as they can only approximately locate an exception and build a chunk in front of it. Next we show these lengths also influence query processing speed.
 
 \begin{table}
 	\centering
@@ -352,97 +352,97 @@ We have introduced the notion of Pareto-Optimal compression techniques taking co
 %recently-proposed PEF gains a better space-time trade-off but slower construction speed, we then present a heuristic partitioning strategy with lower time complexity while preserving same approximation guarantees,
 despite its simplicity, it does work well in practice when applied on GOV2.
 %Experiments show its construction time is far more shorter than the originals while keeping competitive index size and query efficiency.
-Future work will focus on formulating the notion of Pareto-Optimal Compression and exploring linear-time algorithms with different trade-offs under its criteria.
+Inspired by research from literature \cite{wang2016efficiency,zhang2014lns,shorfuzzaman2012allocating,lai2013semantic,tudor2009experiences}, future work will focus on formulating the notion of Pareto-Optimal Compression and exploring linear-time algorithms with different trade-offs under its criteria.
 
 \bibliographystyle{splncs03}
 \bibliography{reference}
 
-\section*{Appendix: Deduction of reasonable partition length ratios}\label{apd}
-%\appendix[Deduction of reasonable partition length ratios] 
-Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $. Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
-For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0,1,2) $, showing that they asymptotically reaches the same upper bound as their partition cost. Shown as the following equation:
-
-\begin{equation}
-	\sup\{\frac{n_2}{n_{1}}\} = {c\left(v_{0},v_{2}\right)}/{c\left(v_{0},v_{1}\right)}=\frac{c_2}{c_1}=1+\varepsilon_{2}
-\end{equation}
-
-\begin{enumerate}
-	
-\item \label{itm: rb2rb}
-Both chunks are represented using \textit{bitvector}, $ \mathcal{E}[1] = \mathcal{E}[2] = 1 $. Then
-\begin{align*}
-	c_2 & = u_2 & c_1 & = u_1 \\ 
-	n_2 & > \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
-\end{align*}
-Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j  $, we get
-\begin{gather*}
-	\frac{u_2}{u_1} = \frac{u_1+k+j}{u_1}=1+\varepsilon_2\\
-	\frac{u_1+k+j}{n_1+k} < 4\\
-	\frac{u_1}{n_1} < 4
-\end{gather*}
-Finally
-\begin{gather*}
-k+j<4k<4n_1\cdot \varepsilon_2 \\
-\frac{n_2}{n_1}=\frac{n_1+k}{n_1} < \frac{n_1+ n_1\cdot \varepsilon_2}{n_1}=1+\varepsilon_2
-\end{gather*}
-
-\item \label{itm: ef2ef}
-Both chunks are represented using EF, $ \mathcal{E}[1] = \mathcal{E}[2] = 2 $. Then
-\begin{align*}
-c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor) \\ 
-n_2 & \leq \frac{u_2}{4} &	n_1 & \leq \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
-	\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} = 1 + \varepsilon_2 \\ 
-	\lfloor \log \frac{u_2}{n_2} \rfloor \geq 2 \Rightarrow \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} \approx 1
-\end{gather*}
-We get 
-\[
- \frac{n_2}{n_1} \approx 1+ \varepsilon_2 
-\]
-
-\item \label{itm: rb2ef}
-The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $. Then
-\begin{align*}
-c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
-n_2 & \leq \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
-\frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{4 n_1} < \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
-\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
-\end{gather*}
-we get
-\[
-	\frac{n_2}{n_1} \leq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
-\]
-
-\item \label{itm: ef2rb}
-The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $. Then
-\begin{align*}
-c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
-n_2 & > \frac{u_2}{4} & n_1 & \leq \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
-\frac{4 n_2}{n_1 \cdot (2+\lfloor \log \frac{u_1}{n_2} \rfloor)} > \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
-\frac{n_2}{n_1} \cdot \frac{4}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} > 1 + \varepsilon_2
-\end{gather*}
-we get
-\[
-\frac{n_2}{n_1} \geq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} > 1 + \varepsilon_2
-\]
-\end{enumerate}
-
-Note that chunks represented using \textit{bitvector} are dense chunks, those using EF are sparser.
-So in previous case~\ref{itm: rb2ef}, chunks change from dense to sparse, exceptions are certainly encountered in the middle.
-As for case~\ref{itm: ef2rb}, chunks are becoming dense, it only happens under the situation with out exceptions.
-
-We do not analyze chunks represented using \textit{non-encoding}, as they extreme cases that are rarely encountered, and their partition weights are set to be zero which makes them more sensitive to exceptions.
-Intuitively, \textit{non-encoding} cannot be leaded by EF or \textit{bitvector}, and it can be followed by the other two representations no matter how long its partition length is.
-In extreme case, we can set every single integer to be represented by \textit{non-encoding}, however, it does not compress at all and produces many more chunks. So chunks using \textit{non-encoding} are set to be at least longer than 8 integers and following the same upper bound as other cases.
-
-Thus we set the partition length ratio to be $ 1+\varepsilon_2 $, and once $ \frac{n_2}{n_1} < 1+ \varepsilon_2 $ for two consecutive chunks starting from the same position, we can certainly determine that an exception is encountered in the middle.  
+%\section*{Appendix: Deduction of reasonable partition length ratios}\label{apd}
+%%\appendix[Deduction of reasonable partition length ratios] 
+%Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $. Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
+%For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0,1,2) $, showing that they asymptotically reaches the same upper bound as their partition cost. Shown as the following equation:
+%
+%\begin{equation}
+%	\sup\{\frac{n_2}{n_{1}}\} = {c\left(v_{0},v_{2}\right)}/{c\left(v_{0},v_{1}\right)}=\frac{c_2}{c_1}=1+\varepsilon_{2}
+%\end{equation}
+%
+%\begin{enumerate}
+%	
+%\item \label{itm: rb2rb}
+%Both chunks are represented using \textit{bitvector}, $ \mathcal{E}[1] = \mathcal{E}[2] = 1 $. Then
+%\begin{align*}
+%	c_2 & = u_2 & c_1 & = u_1 \\ 
+%	n_2 & > \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
+%\end{align*}
+%Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j  $, we get
+%\begin{gather*}
+%	\frac{u_2}{u_1} = \frac{u_1+k+j}{u_1}=1+\varepsilon_2\\
+%	\frac{u_1+k+j}{n_1+k} < 4\\
+%	\frac{u_1}{n_1} < 4
+%\end{gather*}
+%Finally
+%\begin{gather*}
+%k+j<4k<4n_1\cdot \varepsilon_2 \\
+%\frac{n_2}{n_1}=\frac{n_1+k}{n_1} < \frac{n_1+ n_1\cdot \varepsilon_2}{n_1}=1+\varepsilon_2
+%\end{gather*}
+%
+%\item \label{itm: ef2ef}
+%Both chunks are represented using EF, $ \mathcal{E}[1] = \mathcal{E}[2] = 2 $. Then
+%\begin{align*}
+%c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor) \\ 
+%n_2 & \leq \frac{u_2}{4} &	n_1 & \leq \frac{u_1}{4}
+%\end{align*}
+%Since
+%\begin{gather*}
+%	\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} = 1 + \varepsilon_2 \\ 
+%	\lfloor \log \frac{u_2}{n_2} \rfloor \geq 2 \Rightarrow \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} \approx 1
+%\end{gather*}
+%We get 
+%\[
+% \frac{n_2}{n_1} \approx 1+ \varepsilon_2 
+%\]
+%
+%\item \label{itm: rb2ef}
+%The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $. Then
+%\begin{align*}
+%c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
+%n_2 & \leq \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
+%\end{align*}
+%Since
+%\begin{gather*}
+%\frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{4 n_1} < \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
+%\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
+%\end{gather*}
+%we get
+%\[
+%	\frac{n_2}{n_1} \leq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
+%\]
+%
+%\item \label{itm: ef2rb}
+%The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $. Then
+%\begin{align*}
+%c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
+%n_2 & > \frac{u_2}{4} & n_1 & \leq \frac{u_1}{4}
+%\end{align*}
+%Since
+%\begin{gather*}
+%\frac{4 n_2}{n_1 \cdot (2+\lfloor \log \frac{u_1}{n_2} \rfloor)} > \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
+%\frac{n_2}{n_1} \cdot \frac{4}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} > 1 + \varepsilon_2
+%\end{gather*}
+%we get
+%\[
+%\frac{n_2}{n_1} \geq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} > 1 + \varepsilon_2
+%\]
+%\end{enumerate}
+%
+%Note that chunks represented using \textit{bitvector} are dense chunks, those using EF are sparser.
+%So in previous case~\ref{itm: rb2ef}, chunks change from dense to sparse, exceptions are certainly encountered in the middle.
+%As for case~\ref{itm: ef2rb}, chunks are becoming dense, it only happens under the situation with out exceptions.
+%
+%We do not analyze chunks represented using \textit{non-encoding}, as they extreme cases that are rarely encountered, and their partition weights are set to be zero which makes them more sensitive to exceptions.
+%Intuitively, \textit{non-encoding} cannot be leaded by EF or \textit{bitvector}, and it can be followed by the other two representations no matter how long its partition length is.
+%In extreme case, we can set every single integer to be represented by \textit{non-encoding}, however, it does not compress at all and produces many more chunks. So chunks using \textit{non-encoding} are set to be at least longer than 8 integers and following the same upper bound as other cases.
+%
+%Thus we set the partition length ratio to be $ 1+\varepsilon_2 $, and once $ \frac{n_2}{n_1} < 1+ \varepsilon_2 $ for two consecutive chunks starting from the same position, we can certainly determine that an exception is encountered in the middle.  
 
 \end{document}
