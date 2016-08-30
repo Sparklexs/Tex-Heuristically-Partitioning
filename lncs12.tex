@@ -437,7 +437,6 @@ Next we will reveal how these differences affect performances of index.
 All the implementations are carried out on a PC server with an 8 core Intel(r) Xeon(r) E5620 processor running at 2.40 GHz, with 128GB of RAM and 12,288KB of cache.
 Our algorithms are implemented using C++ and compiled with GCC 4.8.1 with -O3 optimizations.
 In all our runs, executions are reported as the mean of 4 consecutive replications.
-Before performing queries, the whole inverted index is completely loaded into main memory, in order to avoid the confusion caused by disk I/O.
 Our implementations are available at \url{https://github.com/Sparklexs/partitioned_elias_fano}.
 
 We test performances of two strategies on EF index, \textit{coarse} which finishes partitioning in a single pass, and \textit{discreet} which works in a more space-efficient way, against the original methods, namely uniform-partitioned PEF (\textit{uniform}) and $\varepsilon$-partitioned PEF (\textit{optimal}).
@@ -565,7 +564,6 @@ However, \textit{optimal} seems to find a more appropriate partition length.
 Be it larger or smaller, will either lead to a decline of compression ratio.
 \textit{Discreet} and \textit{coarse} do not differ much from each other, as they can only approximately locate an exception and build a chunk in front of it.
 Next we show these lengths also influence query processing speed.
-
 \begin{table}
 	\centering
 	\caption{Average partition lengths of different indexes for each component}
@@ -587,11 +585,71 @@ Next we show these lengths also influence query processing speed.
 \subsection{Query efficiency}
 
 In order to explore the efficiency differences caused by partitioning strategies, the experiment adopts four widely-used methods of ranked query to find the top-20 results, DAAT\_AND, DAAT\_OR, WAND and Maxscore.
-% how we build query set
 % the differences of boolean query and dynamic pruning
+Among these query processing strategies, the first two are exhaustive index traversal techniques without skipping, and the rest are two classic dynamic pruning techniques which allow skipping invalid blocks to reach an early termination.
+Thus, we are able to compare the sequential decoding speed of these indexes using the first category and the support of random access using the second category.
+
+% how we really build query set
+%We randomly select 4000 terms from lexicon of the index, any of which has a document frequency within the range $(10^{5},10^{6})$, and we regroup them into 1000 queries every 4 terms, avoiding the bias brought by short posting lists while highlighting advantage of random access.
+The query set if composed by 10000 queries of term number ranging from 1 to 5, with each kind accounting for 20\%.
+All the queries are randomly sampled from TREC 2005 Efficiency Track topics, drawing only those whose terms have a mapping in the lexicon after stemming.
+Also, the posting lists related to these queries have an average length larger than $ 10^5 $, avoiding the bias brought by short posting lists while highlighting advantage of random access.
+
 % measuring in  microseconds
-% our goal is only to prove our methods are not obviously inferior to the orignal one.
-We randomly select 4000 terms from lexicon of the index, any of which has a document frequency within the range $(10^{5},10^{6})$, and we regroup them into 1000 queries every 4 terms, avoiding the bias brought by short posting lists while highlighting advantage of random access.
+Before performing queries, the whole inverted index is completely loaded into main memory, in order to avoid the confusion caused by disk I/O.
+As declared in the beginning of this section, the query times, in milliseconds, are reported as the average of 4 consecutive replications.
+% our goal is only to prove our methods are not obviously inferior to the original one.
+Also note that our goal of this subsection is only to demonstrate that indexes built using our partitioning strategies are not obviously inferior to \textit{optimal}, since they are working in a much faster while less accurate way.
+\begin{table}
+	\centering
+	\caption{Comparison of average query time in milliseconds under 4 query processing strategies}
+	\renewcommand{\arraystretch}{1.0}
+	\setlength\tabcolsep{6pt}
+	\begin{tabular}{@{}ll*{4}{r}}
+		\toprule
+		\multirow{2}*{collection} & \multirow{2}*{method} & \multicolumn{4}{c}{query strategy} \\
+		\cmidrule(lr){3-6}
+		& &\multicolumn{1}{c}{DAAT\_AND} & \multicolumn{1}{c}{DAAT\_OR} & \multicolumn{1}{c}{WAND} & \multicolumn{1}{c}{Maxscore} \\
+		\midrule
+		\multirow{5}*{GOV2} 
+		& discreet & 4.12 & 36.41 & 6.64 & 13.89 \\
+		& coarse   & 4.35 & 36.53 & 6.68 & 14.01 \\
+		\cmidrule(l){2-6}
+		& optimal  & 3.87 & 33.49 & 6.22 & 13.20 \\
+		& uniform  & 4.05 & 34.82 & 6.43 & \textbf{12.62} \\
+		& OptPFOR  & \textbf{3.32} & \textbf{25.35} & \textbf{5.38} & 14.38 \\	
+		\midrule
+		\multirow{5}*{Common Crawl} 
+		& discreet & 4.06 & 35.18 & 14.25 & 25.32 \\
+		& coarse   & 4.10 & 35.64 & 14.29 & 25.33 \\
+		\cmidrule(l){2-6}
+		& optimal  & 4.06 & 34.78 & 14.19 & 25.16 \\
+		& uniform  & 4.36 & 36.78 & 15.02 & \textbf{24.16} \\
+		& OptPFOR  & \textbf{3.95} & \textbf{26.92} & \textbf{12.98} & 26.37 \\
+%		& discreet & 7.02 & 58.06 & 10.91 & 21.47 \\
+%		& coarse   & 8.10 & 56.32 & 11.33 & 22.61 \\
+%		\cmidrule(l){2-6}
+%		& optimal  & 6.52 & 55.27 & 13.25 & 21.14 \\
+%		& uniform  & 6.73 & 62.62 & 11.96 & 25.29 \\
+%		& OptPFOR  & 4.86 & 38.11 & 8.40 & 24.01 \\
+
+%		\multirow{5}*{GOV2} & discreet & 4099.48 & 35640.2 & 14251.4 & 25316.6 \\
+%		                      & coarse & 4061.74 & 35175.4 & 14287.3 & 25328.9 \\
+%		\cmidrule(l){2-6}
+%		  & optimal & 4056.39 & 34779.4 & 14189.8 & 25160.4 \\
+%		            & uniform & 4359.81 & 36780.1 & 15018.3 & 24156.8 \\
+%		            & OptPFOR & 3950.77 & 26916.7 & 12977.7 & 16369.9 \\
+%		\midrule
+%		\multirow{5}*{Common Crawl} & discreet & 7024.89 & 64324.7 & 10914.9 & 22614.9 \\
+%		                              & coarse & 8100.53 & 58062.9 & 11325.4 & 21466.7 \\
+%		\cmidrule(l){2-6}
+%		          & optimal & 6516.33 & 55272 & 13253.7 & 21137.7 \\
+%		                     & uniform & 6732.35 & 62617.6 & 11963.5 & 25288.1 \\
+%		                    & OptPFOR & 4863.62 & 38107.8 & 8396.07 & 12008.5 \\
+		\bottomrule
+		\label{tab:efficiency}
+	\end{tabular}
+\end{table}
 
 As shown in Figure~\ref{fig:queries}, query time has been enlarged by involvements of multiple long posting lists, outliers can be as large as $10^{5}$ msec, however, most queries can be processed within hundreds of msec.
 Performances vary a lot among different processing methods,DAAT traverses the index in an exhaustive way, relying only on the throughput of postings.
