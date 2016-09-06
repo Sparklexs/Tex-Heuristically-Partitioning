@@ -450,7 +450,7 @@ Even \textit{optimal} is accelerated, the procedure of finding the approximation
 Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
 
 \textit{Compression.} Table~\ref{tab:size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
-Firstly we compare teh construction time of these methods.
+Firstly we compare the construction time of these methods.
 There is no doubt that \textit{uniform} gets the fastest speed on two collections, since it chooses the simplest partitioning strategy without extra calculations, even compared with OptPFOR, it still more than doubles the compression speed.
 It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy.
 Also note that compression time of most methods grows linearly as the collection size except \textit{optimal}.
@@ -672,7 +672,7 @@ Since the partitioning strategy only focuses on optimal compression, what has be
 \section*{Appendix: Deduction of reasonable partition length ratios}\label{sec:appendix}
 
 %\appendix[Deduction of reasonable partition length ratios] 
-Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $.
+Denote the two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $.
 Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
 For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0, 1, 2) $, showing that they asymptotically reach the same upper bound as their partition cost.
 Shown as the following equation:
@@ -720,7 +720,7 @@ Shown as the following equation:
 	\]
 	
 	\item \label{itm:rb2ef}
-	The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $.
+	The former chunk is represented by \textit{bitvector} and the latter is EF, $ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $.
 	Then
 	\begin{align*}
 	c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
@@ -737,7 +737,7 @@ Shown as the following equation:
 	\]
 	
 	\item \label{itm:ef2rb}
-	The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $.
+	The former chunk is represented by EF and the latter is \textit{bitvector}, $ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $.
 	Then
 	\begin{align*}
 	c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
@@ -756,7 +756,7 @@ Shown as the following equation:
 
 Note that chunks represented using \textit{bitvector} are dense chunks, those using EF are sparser.
 So in previous case~\ref{itm:rb2ef}, chunks change from dense to sparse, exceptions are certainly encountered in the middle.
-As for case~\ref{itm:ef2rb}, chunks are becoming dense, it only happens under the situation with out exceptions.
+As for case~\ref{itm:ef2rb}, chunks are becoming dense, it only happens under the situation without exceptions.
 
 We do not analyze chunks represented using \textit{non-encoding}, as they extreme cases that are rarely encountered, and their partition weights are set to be zero which makes them more sensitive to exceptions.
 Intuitively, \textit{non-encoding} cannot be leaded by EF or \textit{bitvector}, and it can be followed by the other two representations no matter how long its partition length is.
