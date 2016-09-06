@@ -397,7 +397,7 @@ We test performances of two strategies on EF index, \textit{coarse} which finish
 
 \subsection{Indexing Performance}
 
-First of all, We experiment differences in compression size and time caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$.
+\textit{Parameters.} First of all, We experiment differences in compression size and time caused by predefined parameters, namely the approximation $\varepsilon_{2}$ and the upper bound parameter $\varepsilon_{1}$.
 As \textit{coarse} and \textit{discreet} partition a posting list in a single pass, relying only on the total length.
 Construction time has little relevance to these parameters, and in practice it stays stable to them unsurprisingly.
 Figure~\ref{fig:parameter} shows the influences of them on index size for our proposed methods when compressing both GOV2 and Common Crawl, to facilitate reading, we translate the compressed size into relative percentages compared with the smallest ones on each collection.
@@ -412,11 +412,11 @@ We can see that $ \varepsilon_1 $ stays same for different methods on the same c
 	\centering
 	\subfloat[fixing $\varepsilon_{1}=0$, varying $\varepsilon_{2}$ from 0.1 to 1]{
 		\label{fig:epsilon:a}
-		\includegraphics[width=0.65\linewidth]{eps2}
-	}\\
+		\includegraphics[width=0.5\linewidth]{eps2}
+	}
 	\subfloat[fixing $\varepsilon_{2}$ to values got above, varying $\varepsilon_{1}$ from 0 to 0.1]{
 		\label{fig:epsilon:b}
-		\includegraphics[width=0.65\linewidth]{eps1}
+		\includegraphics[width=0.5\linewidth]{eps1}
 	}
 	
 	\caption{Influences of the parameters $\varepsilon_{2}$ and $\varepsilon_{1}$ on two partitioning strategies.}
@@ -448,22 +448,6 @@ For the latter, thread switching might consume extra system resources.
 In our experiment, parallelization prolongs construction times for these I/O-bound methods instead.
 Even \textit{optimal} is accelerated, the procedure of finding the approximation parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ is still a repetitive work, which costs too much time.
 Since \textit{coarse} and \textit{discreet} costs much less time, and works well on a single thread, this procedure is no longer a bottleneck.
-
-\textit{Compression.} Table~\ref{tab:size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
-Firstly we compare the construction time of these methods.
-There is no doubt that \textit{uniform} gets the fastest speed on two collections, since it chooses the simplest partitioning strategy without extra calculations, even compared with OptPFOR, it still more than doubles the compression speed.
-It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy.
-Also note that compression time of most methods grows linearly as the collection size except \textit{optimal}.
-From Table~\ref{tab:collection statistics}, we know that Common Crawl has nearly twice as many pointers as GOV2, however, \textit{optimal} costs 5 times longer time to compress.
-This implies \textit{optimal} might not be a good choice for large collections in practice.
-
-Next we compare the space occupancy using these methods.
-Generally there is an inverse relationship between compressed size and compression time, however, the differences between each other are not statistically significant.
-While inferior to \textit{optimal}, the two proposed methods are competitive compared with OptPFOR on both collections.
-\textit{Discreet} has obvious superiority compared with \textit{coarse}, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes.
-The last column denotes time used for a sequential decompression of the index.
-All EF-based indexes cost longer time than OptPFOR, and on GOV2 \textit{discreet} and \textit{coarse} tends to use 10\% longer time to traverse the index than \textit{optimal} and \textit{uniform}, when the collection gets larger, the differences tends to disappear.
-Although all EF-based methods decompress much slower than OptPFOR, we will show in the following that their advantages are embodied in random access when applied to query processing.
 
 \begin{table}
 	\centering
@@ -512,8 +496,23 @@ Although all EF-based methods decompress much slower than OptPFOR, we will show 
 %		\end{tabular}
 %	\end{center}
 %\end{table}
+\textit{Compression.} Table~\ref{tab:size and speed} shows the performances of different partitioning strategies on GOV2 and Common Crawl, adding OptPFOR-compressed index (OptPFOR) as a baseline.
+Firstly we compare the construction time of these methods.
+There is no doubt that \textit{uniform} gets the fastest speed on two collections, since it chooses the simplest partitioning strategy without extra calculations, even compared with OptPFOR, it still more than doubles the compression speed.
+It is clear that both proposed strategies outperform the original ones by a large margin over the compression time, making construction of PEF competitive with OptPFOR, at the cost of a slight larger space occupancy.
+Also note that compression time of most methods grows linearly as the collection size except \textit{optimal}.
+From Table~\ref{tab:collection statistics}, we know that Common Crawl has nearly twice as many pointers as GOV2, however, \textit{optimal} costs 5 times longer time to compress.
+This implies \textit{optimal} might not be a good choice for large collections in practice.
 
-Table~\ref{tab:chunk size} shows comparisons of average partition lengths for different methods except \textit{uniform} and OptPFOR as they use fixed-sized block (128).
+Next we compare the space occupancy using these methods.
+Generally there is an inverse relationship between compressed size and compression time, however, the differences between each other are not statistically significant.
+While inferior to \textit{optimal}, the two proposed methods are competitive compared with OptPFOR on both collections.
+\textit{Discreet} has obvious superiority compared with \textit{coarse}, sacrificing 4.7\% construction time in exchange for 6\% smaller index size, however, it still gets a better compression ratio than the last two uniformly partitioned indexes.
+The last column denotes time used for a sequential decompression of the index.
+All EF-based indexes cost longer time than OptPFOR, and on GOV2 \textit{discreet} and \textit{coarse} tends to use 10\% longer time to traverse the index than \textit{optimal} and \textit{uniform}, when the collection gets larger, the differences tends to disappear.
+Although all EF-based methods decompress much slower than OptPFOR, we will show in the following that their advantages are embodied in random access when applied to query processing.
+
+\textit{Average partition length.} Table~\ref{tab:chunk size} shows comparisons of average partition lengths for different methods except \textit{uniform} and OptPFOR as they use fixed-sized block (128).
 Results on GOV2 and Common Crawl are contrary to each other, we can notice that average partition length on GOV2 for \textit{optimal} is larger than \textit{coarse} and \textit{discreet}, nonetheless, smaller on Common Crawl.
 It is likely caused by the local statistics of collections, for Common Crawl has fewer documents but more terms, \textit{docids} of its posting list trend to be more tightened together.
 However, \textit{optimal} seems to find a more appropriate partition length.
