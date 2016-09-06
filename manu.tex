@@ -1,22 +1,4 @@
-
-%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% This is the LaTeX source for the instructions to authors using
-% the LaTeX document class 'llncs.cls' for contributions to
-% the Lecture Notes in Computer Sciences series.
-% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
-%
-% It may be used as a template for your own input - copy it
-% to a new file with a new name and use it as the basis
-% for your article.
-%
-% NB: the document class 'llncs' has its own and detailed documentation, see
-% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\documentclass[runningheads,a4paper]{llncs}
+\documentclass[runningheads]{comsis2}
 
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -31,51 +13,29 @@
 
 \usepackage{url}
 \usepackage{multirow,booktabs,makecell,color,colortbl}
- 
-\newcommand{\keywords}[1]{\par\addvspace\baselineskip
-\noindent\keywordname\enspace\ignorespaces#1}
+
+%% Necessary definitions for the running heads
+\def\journalissue{Computer Science and Information Systems ?(?):??--??}
+\def\paperidnum{DOI: N/A}
+\setcounter{page}{1}
+
+\title{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
+
+%% Use this if the title is too long for the running heads
+\titlerunning{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
+
+\author{Xingshen Song \and Yuexiang Yang}
+
+
+%% Use this the list of authors is too long for the running heads
+%\authorrunning{First Author et al.}
+
+\institute{College of Computer, National University of Defense Technology\\ Changsha, China\\
+  \email{\{songxingshen, yyx\}@nudt.edu.cn}}
 
 \begin{document}
 
-\mainmatter % start of an individual contribution
-
-% first the title is needed
-\title{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
-
-% a short form should be given in case it is too long for the running head
-\titlerunning{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
-
-% the name(s) of the author(s) follow(s) next
-%
-% NB: Chinese authors should write their first names(s) in front of
-% their surnames. This ensures that the names appear correctly in
-% the running heads and the author index.
-%
-\author{Xingshen Song\inst{1} \and Kun Jiang\inst{2}\and Yuexiang Yang\inst{1}}
-%
-\authorrunning{Xingshen Song, Kun Jiang, Jie He and Yuexiang Yang}
-% (feature abused for this document to repeat the title also on left hand pages)
-
-% the affiliations are given next; don't give your e-mail address
-% unless you accept that it will be published
-\institute{College of Computer, National University of Defense Technology,\\ Changsha, China\\
-\email{\{songxingshen, yyx\}@nudt.edu.cn}
-\and
-School of Electronic and Information Engineering,\\ Xian Jiaotong University, Xian, China\\
-\email{jk\_365@126.com}
-}
-
-% 
-% NB: a more complex sample for affiliations and the mapping to the
-% corresponding authors can be found in the file "llncs.dem"
-% (search for the string "\mainmatter" where a contribution starts).
-% "llncs.dem" accompanies the document class "llncs.cls".
-%
-
-\toctitle{A Heuristically Optimized Partitioning Strategy on Elias-Fano Index}
-\tocauthor{Xingshen Song, Kun Jiang, Jie He and Yuexiang Yang}
 \maketitle
-
 
 \begin{abstract}
 Inverted index is the preferred data structure for data managing and query processing in large information systems, its compression techniques have long been studied to mitigate the dichotomy between space occupancy and decompression time.
@@ -87,9 +47,8 @@ However, these partitioning strategies sacrifice too much compression time.
 In this paper, we first compare performances of existing encoders in the space-time trade-off curve, then we present a faster algorithm to heuristically compute optimal partitions for the state-of-the-art Partitioned Elias-Fano index, taking account of compression time while maintaining the same approximation guarantees.
 Experimental results on two document collections show that our method is significantly faster than its original version, at the price of a slightly worse compression ratio and query efficiency.
 
-\keywords{Inverted Index, Index Compression, Partitioning Strategy, Approximation Algorithm}
+\vspace{6pt}\textbf{Keywords:} Inverted Index, Index Compression, Partitioning Strategy, Approximation Algorithm.
 \end{abstract}
-
 
 \section{Introduction}\label{sec:intro}
 
@@ -127,7 +86,6 @@ There is still much potential for the compression speed of PEF to be improved.
 We provide a heuristic partitioning strategy on PEF which computes partitions in a single pass with only one sliding window.
 More precisely, we compare the sizes of a series of adjacent blocks, once an exceptional small block is detected, an endpoint then will be assigned inside it, based on an observation that block length should grow in proportion as its space cost.
 Last we perform an experiment on two collection, GOV2 and Common Crawl, which shows the compression time is significantly reduced against the original work while its space occupancy and decompression time maintains comparable to the original one.
-
 \section{Index Compression and Partitioning Strategies}\label{sec:background}
 
 Compressing the index has long been a key issue for researchers to ensure both the time- and space-efficiency of inverted index, various encoders with different properties have been put up to settle this problem, and they can be roughly divided into two classes, namely the \textit{integer-oriented encoders} and the \textit{list-oriented encoders}.
@@ -167,7 +125,7 @@ Several variant implementations are provided on its website\footnote{\url{http:/
 The recently proposed PEF sheds light upon how to accelerate the compression performance of VSEncoding with approximation algorithms, PEF identifies the minimum-space partition by omitting inefficient schemes, thus time complexity is greatly reduced.
 \begin{figure}
 	\centering
-	\includegraphics[width=1.0\linewidth]{sssp}
+	\includegraphics[width=0.9\linewidth]{sssp}
 	\caption[sssp]{Here is a DAG for sequence with 6 docids, with each vertex represents a docid, and each edge represents a block containing docids along the edge. The docids, denoted as vertexes, are represented using gaps. The number under the edge denotes the cost for it, which is calculated by summing fixed cost of building a block (here it is set to be 4) and bits to encode the block. Red lines are the shortest path for this graph, namely, the optimal partition with the smallest space cost.}
 	\label{fig:sssp}
 \end{figure}
@@ -211,7 +169,7 @@ Figure~\ref{fig:performance} shows performances of different compression techniq
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.9\linewidth]{performance}
+	\includegraphics[width=0.7\linewidth]{performance}
 	\caption{Performance of different encoders under tri-criteria. The x-axis (bpi) is arranged in a reverse order and color of each point indicates the encoding speed, the deeper, the faster.}
 	\label{fig:performance}
 \end{figure}
@@ -295,7 +253,7 @@ An example of the above procedure is shown in Figure~\ref{fig:exceptions}.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=1.0\linewidth]{exception}
+	\includegraphics[width=0.9\linewidth]{exception}
 	\caption{Finding $\varepsilon$-maximal edges for position $ i $ using sliding windows. Here we show three edges with cost upper bound as $ F(1+\varepsilon)^{h-1}, F(1+\varepsilon)^{h}, F(1+\varepsilon)^{h+1} $, and their edge lengths are 16, 15, 6, respectively. Then we certain that an exception is encountered inside the third edge, and we can build a chunk right before the exception to save more space and reduce calculation.}
 	\label{fig:exceptions}
 \end{figure}
@@ -460,7 +418,7 @@ We can see that $ \varepsilon_1 $ stays same for different methods on the same c
 		\label{fig:epsilon:b}
 		\includegraphics[width=0.65\linewidth]{eps1}
 	}
-
+	
 	\caption{Influences of the parameters $\varepsilon_{2}$ and $\varepsilon_{1}$ on two partitioning strategies.}
 	\label{fig:parameter}
 \end{figure}
@@ -468,7 +426,7 @@ We can see that $ \varepsilon_1 $ stays same for different methods on the same c
 \begin{table}
 	\caption{Configuration of parameters $ \left( \varepsilon_1, \varepsilon_2 \right) $ for different methods when compressing collections}
 	\begin{center}
-		\renewcommand{\arraystretch}{1.4}
+		\renewcommand{\arraystretch}{1.0}
 		\setlength\tabcolsep{6pt}
 		\begin{tabular}{*{3}c}
 			\toprule
@@ -686,11 +644,11 @@ Among the three optimal partitioning strategies, they do not differ from each ot
 	\centering
 	\subfloat[GOV2]{
 		\label{fig:query_gov2}
-		\includegraphics[width=0.7\linewidth]{queries_gov2}
-	}\\
+		\includegraphics[width=0.5\linewidth]{queries_gov2}
+	}
 	\subfloat[Common Crawl]{
 		\label{fig:query_cc}
-		\includegraphics[width=0.7\linewidth]{queries_cc}
+		\includegraphics[width=0.5\linewidth]{queries_cc}
 	}
 	
 	\caption{Query time distribution for different query processing methods on GOV2 and Common Crawl.}
@@ -716,84 +674,84 @@ Since the partitioning strategy only focuses on optimal compression, what has be
 %\appendix[Deduction of reasonable partition length ratios] 
 Denote two consecutive partitions starting from the same position as $ \mathcal{P}_{1}[ v_0, v_1 ] $ and $ \mathcal{P}_{2}[v_0, v_2] $.
 Accordingly, their partition length and universe are $ n_1, u_1 $ and $ n_2, u_2 $, suppose $n_2 = n_1 + k, u_2 = u_1 + k + j $.
-For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0, 1, 2) $, showing that they asymptotically reaches the same upper bound as their partition cost.
+For completeness of exposition we report here the deduction of reasonable ratios for all the 9 combinations between $ \mathcal{E}[1] $ and $ \mathcal{E}[2] $, $ \mathcal{E} \in (0, 1, 2) $, showing that they asymptotically reach the same upper bound as their partition cost.
 Shown as the following equation:
 
 \begin{equation}
-	\sup\{\frac{n_2}{n_{1}}\} = {c\left(v_{0}, v_{2}\right)}/{c\left(v_{0}, v_{1}\right)}=\frac{c_2}{c_1}=1+\varepsilon_{2}
+\sup\{\frac{n_2}{n_{1}}\} = {c\left(v_{0}, v_{2}\right)}/{c\left(v_{0}, v_{1}\right)}=\frac{c_2}{c_1}=1+\varepsilon_{2}
 \end{equation}
 
 \begin{enumerate}
 	
-\item \label{itm:rb2rb}
-Both chunks are represented using \textit{bitvector}, $ \mathcal{E}[1] = \mathcal{E}[2] = 1 $.
-Then
-\begin{align*}
+	\item \label{itm:rb2rb}
+	Both chunks are represented using \textit{bitvector}, $ \mathcal{E}[1] = \mathcal{E}[2] = 1 $.
+	Then
+	\begin{align*}
 	c_2 & = u_2 & c_1 & = u_1 \\ 
 	n_2 & > \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
-\end{align*}
-Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j $, we get
-\begin{gather*}
+	\end{align*}
+	Since $ \frac{c_2}{c_1}=1+\varepsilon_2, n_2 = n_1 + k, u_2 = u_1 + k + j $, we get
+	\begin{gather*}
 	\frac{u_2}{u_1} = \frac{u_1+k+j}{u_1}=1+\varepsilon_2\\
 	\frac{u_1+k+j}{n_1+k} < 4\\
 	\frac{u_1}{n_1} < 4
-\end{gather*}
-Finally
-\begin{gather*}
-k+j<4k<4n_1\cdot \varepsilon_2 \\
-\frac{n_2}{n_1}=\frac{n_1+k}{n_1} < \frac{n_1+ n_1\cdot \varepsilon_2}{n_1}=1+\varepsilon_2
-\end{gather*}
-
-\item \label{itm:ef2ef}
-Both chunks are represented using EF, $ \mathcal{E}[1] = \mathcal{E}[2] = 2 $.
-Then
-\begin{align*}
-c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor) \\ 
-n_2 & \leq \frac{u_2}{4} &	n_1 & \leq \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
+	\end{gather*}
+	Finally
+	\begin{gather*}
+	k+j<4k<4n_1\cdot \varepsilon_2 \\
+	\frac{n_2}{n_1}=\frac{n_1+k}{n_1} < \frac{n_1+ n_1\cdot \varepsilon_2}{n_1}=1+\varepsilon_2
+	\end{gather*}
+	
+	\item \label{itm:ef2ef}
+	Both chunks are represented using EF, $ \mathcal{E}[1] = \mathcal{E}[2] = 2 $.
+	Then
+	\begin{align*}
+	c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor) \\ 
+	n_2 & \leq \frac{u_2}{4} &	n_1 & \leq \frac{u_1}{4}
+	\end{align*}
+	Since
+	\begin{gather*}
 	\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} = 1 + \varepsilon_2 \\ 
 	\lfloor \log \frac{u_2}{n_2} \rfloor \geq 2 \Rightarrow \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} \approx 1
-\end{gather*}
-We get 
-\[
- \frac{n_2}{n_1} \approx 1+ \varepsilon_2 
-\]
-
-\item \label{itm:rb2ef}
-The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $.
-Then
-\begin{align*}
-c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
-n_2 & \leq \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
-\frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{4 n_1} < \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
-\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
-\end{gather*}
-we get
-\[
+	\end{gather*}
+	We get 
+	\[
+	\frac{n_2}{n_1} \approx 1+ \varepsilon_2 
+	\]
+	
+	\item \label{itm:rb2ef}
+	The former chunk is represented by \textit{bitvector} and the latter is EF,$ \mathcal{E}[1]= 1, \mathcal{E}[2]=2 $.
+	Then
+	\begin{align*}
+	c_2 & = n_2(2+\lfloor \log \frac{u_2}{n_2} \rfloor) & c_1 & = u_1 \\ 
+	n_2 & \leq \frac{u_2}{4} &	n_1 & > \frac{u_1}{4}
+	\end{align*}
+	Since
+	\begin{gather*}
+	\frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{4 n_1} < \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
+	\frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
+	\end{gather*}
+	we get
+	\[
 	\frac{n_2}{n_1} \leq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} < 1 + \varepsilon_2
-\]
-
-\item \label{itm:ef2rb}
-The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $.
-Then
-\begin{align*}
-c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
-n_2 & > \frac{u_2}{4} & n_1 & \leq \frac{u_1}{4}
-\end{align*}
-Since
-\begin{gather*}
-\frac{4 n_2}{n_1 \cdot (2+\lfloor \log \frac{u_1}{n_2} \rfloor)} > \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
-\frac{n_2}{n_1} \cdot \frac{4}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} > 1 + \varepsilon_2
-\end{gather*}
-we get
-\[
-\frac{n_2}{n_1} \geq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} > 1 + \varepsilon_2
-\]
+	\]
+	
+	\item \label{itm:ef2rb}
+	The former chunk is represented by EF and the latter is \textit{bitvector},$ \mathcal{E}[1]= 2, \mathcal{E}[2]=1 $.
+	Then
+	\begin{align*}
+	c_2 & = u_2 & c_1 & = n_1(2+\lfloor \log \frac{u_1}{n_1} \rfloor)\\ 
+	n_2 & > \frac{u_2}{4} & n_1 & \leq \frac{u_1}{4}
+	\end{align*}
+	Since
+	\begin{gather*}
+	\frac{4 n_2}{n_1 \cdot (2+\lfloor \log \frac{u_1}{n_2} \rfloor)} > \frac{n_2 \cdot (2+\lfloor \log \frac{u_2}{n_2} \rfloor)}{u_1} = 1 + \varepsilon_2 \\
+	\frac{n_2}{n_1} \cdot \frac{4}{2+\lfloor \log \frac{u_1}{n_1} \rfloor} > 1 + \varepsilon_2
+	\end{gather*}
+	we get
+	\[
+	\frac{n_2}{n_1} \geq \frac{n_2}{n_1} \cdot \frac{2+\lfloor \log \frac{u_2}{n_2} \rfloor}{4} > 1 + \varepsilon_2
+	\]
 \end{enumerate}
 
 Note that chunks represented using \textit{bitvector} are dense chunks, those using EF are sparser.
@@ -806,5 +764,23 @@ In extreme case, we can set every single integer to be represented by \textit{no
 So we set the chunks which use \textit{non-encoding} to be at least longer than 8 integers and following the same upper bound as other cases.
 
 Thus we set the partition length ratio to be $ 1+\varepsilon_2 $, and once $ \frac{n_2}{n_1} < 1+ \varepsilon_2 $ for two consecutive chunks starting from the same position, we can certainly determine that an exception is encountered in the middle.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% For the final version of the paper: %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Author information
+%\vspace{4ex}\noindent
+%\textbf{Author One} is\dots
+%
+%\bigskip\noindent
+%\textbf{Author Two} is\dots
+%
+%\bigskip\noindent
+%\textbf{Author Three} is\dots
+
+%% Reception and acceptance information
+%\bigskip
+%\paragraph{Received: Month DD, 20YY; Accepted: Month DD, 20YY.}
 
 \end{document}
